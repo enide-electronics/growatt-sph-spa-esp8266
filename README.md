@@ -1,5 +1,5 @@
-# growatt-esp8266-sph-spa
-This project uses a ESP8266 (NodeMCU v3, Wemos D1, etc.) to read energy data from a **Growatt SPH** or **Growatt SPA** inverter.
+# growatt-sph-spa-esp8266
+This project uses a ESP8266 (NodeMCU v3, Wemos D1, ESP-01, etc.) to read energy data from a **Growatt SPH** or **Growatt SPA** inverter.
 It publishes this data to a MQTT server from where it can be consumed by almost any Home Automation solution.
 
 Many ideas to implement this project came from other projects, most notably:
@@ -20,6 +20,7 @@ You'll need ad adapter board with a MAX3232 or similar 3.3V RS232 converter to c
 As seen below, pins D5 and D6 are the soft serial port used to communicate with the inverter at 9600bps.
 It's possible to power the board from the inverter if you add a voltage regulator to convert the 8V down to 3.3v, required by the ESP8266.
 
+Here's a sketch of the wiring diagram for a Wemos D1:
 ```
     FROM INVERTER
 -----------------------   2 = TX

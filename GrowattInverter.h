@@ -15,8 +15,6 @@
 #include <stdint.h>
 #include <functional>
 #include <ModbusMaster.h>
-#include <SoftwareSerial.h>
-#define SLAVE_ADDRESS 1
 #define REGISTERS_TO_READ 45
 
 
@@ -24,11 +22,10 @@ class GrowattInverter
 {
   private:
     float glueFloat(uint16_t w1, uint16_t w2);
-    SoftwareSerial * ser;
     ModbusMaster * node;
 
   public:
-    GrowattInverter(uint8_t pinRx, uint8_t pinTx, uint8_t slaveAddress);
+    GrowattInverter(Stream &serial, uint8_t slaveAddress);
     uint8_t read();
 
     float Ppv1;
@@ -69,6 +66,24 @@ class GrowattInverter
     float Pcharge;
     float Vbat;
     uint16_t SOC;
+	
+	// EPS output
+	float EpsFac; // Hz
+	
+	float EpsPac1; // VA
+	float EpsVac1;
+	float EpsIac1;
+	
+	float EpsPac2; // VA
+	float EpsVac2;
+	float EpsIac2;
+	
+	float EpsPac3; // VA
+	float EpsVac3;
+	float EpsIac3;
+	
+	uint16_t EpsLoadPercent; // 0 .. 100
+	float EpsPF; // -1.0 .. 1.0
 
     bool valid;
 

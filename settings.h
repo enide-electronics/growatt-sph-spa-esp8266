@@ -1,11 +1,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-// Update these with values suitable for your network.
-
-#define SSID "SSID"
-#define PASSWORD "PASSWORD"
-#define MQTT_SERVER "IP_ADDRESS"
+// MQTT server IP
+#define MQTT_SERVER "172.16.30.233"
 
 // Inverter address on modbus, usually 1
 #define MODBUS_INVERTER_SLAVE_ADDR 1

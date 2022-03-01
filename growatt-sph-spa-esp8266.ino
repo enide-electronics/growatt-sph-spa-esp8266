@@ -24,8 +24,9 @@
 
 #include <Arduino.h>
 #include <SoftwareSerial.h>
-
 #include <ESP8266WiFi.h>
+#include <WiFiManager.h>
+
 #include "GrowattInverter.h"
 #include "MqttPublisher.h"
 #include "InverterData.h"
@@ -44,6 +45,7 @@ uint8_t ledStatus = 2;
 
 GrowattInverter *inverter;
 MqttPublisher *mqtt;
+WiFiManager wm;
 
 void setupInverter() {
 #ifdef BOARD_IS_ESP_01
@@ -62,14 +64,23 @@ void setupInverter() {
 void setupWifi() {
 
     delay(10);
-    // We start by connecting to a WiFi network
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(SSID, PASSWORD);
 
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
+#ifdef BOARD_IS_ESP_01
+    wm.setDebugOutput(false); // disable serial debug on ESP-01 boards
+#endif
+
+    bool res = wm.autoConnect("growatt-sph-spa-esp8266", "12345678");
+    if (!res) {
+#ifndef BOARD_IS_ESP_01
+        Serial.println("Failed to connect to wifi, restarting...");
+#endif
+        ESP.restart();
+    } else {
+        wm.startWebPortal();
     }
+    
 
 #ifndef BOARD_IS_ESP_01
     Serial.println("");
@@ -119,12 +130,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void setup() {
     pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+ 
     setupInverter();
     setupWifi();
     setupMqtt();
 }
 
 void loop() {
+    wm.process();
     mqtt->loop();
 
     unsigned long now = millis();

@@ -187,3 +187,73 @@ GrowattInverter::GrowattInverter(Stream &serial, uint8_t slaveAddress) {
     this->EpsLoadPercent = 0.0;
     this->EpsPF = 0.0;
 }
+
+bool GrowattInverter::isDataValid() {
+    return this->valid;
+}
+
+InverterData GrowattInverter::getData() {
+    InverterData data;
+    data.set("status", this->status);
+  
+    data.set("Ppv1", this->Ppv1);    
+    data.set("Vpv1", this->Vpv1);
+    data.set("Ipv1", this->Ipv1);
+  
+    data.set("Ppv2", this->Ppv2);    
+    data.set("Vac1", this->Vac1);
+    data.set("Iac1", this->Iac1);
+    data.set("Pac1", this->Pac1);
+  
+    data.set("Pac", this->Pac);
+    data.set("Fac", this->Fac);
+  
+  
+    data.set("Etoday", this->Etoday);
+    data.set("Etotal", this->Etotal);
+    data.set("Ttotal", this->Ttotal);
+  
+    data.set("Temp1", this->temp1);
+    data.set("Temp2", this->temp2);
+    data.set("Temp3", this->temp3);
+  
+    switch (this->Priority) {
+        case 0:
+            data.set("Priority", "Load First");
+        break;
+        case 1:
+            data.set("Priority", "Bat First");
+        break;
+        case 2:
+            data.set("Priority", "Grid First");
+        break;
+        default:
+            data.set("Priority", (String("Unknown ") + this->Priority).c_str());
+    }
+
+    switch (this->BatteryType) {
+        case 0:
+            data.set("Battery", "LeadAcid");
+        break;
+        
+        case 1:
+            data.set("Battery", "Lithium");
+        break;
+        default:
+            data.set("Battery", (String("Unknown type ") + this->BatteryType).c_str());
+    }
+
+    data.set("Pdischarge", this->Pdischarge);
+    data.set("Pcharge", this->Pcharge);
+    data.set("Vbat", this->Vbat);
+    data.set("SOC", this->SOC);
+
+    data.set("EpsFac", this->EpsFac);
+    data.set("EpsPac1", this->EpsPac1);
+    data.set("EpsVac1", this->EpsVac1);
+    data.set("EpsIac1", this->EpsIac1);
+    data.set("EpsLoadPercent", this->EpsLoadPercent);
+    data.set("EpsPF", this->EpsPF);
+    
+    return data;
+}

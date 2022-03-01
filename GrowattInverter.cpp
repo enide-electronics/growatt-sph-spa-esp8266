@@ -200,14 +200,26 @@ InverterData GrowattInverter::getData() {
     data.set("Vpv1", this->Vpv1);
     data.set("Ipv1", this->Ipv1);
   
-    data.set("Ppv2", this->Ppv2);    
+    data.set("Ppv2", this->Ppv2);   
+    data.set("Vpv2", this->Vpv2);
+    data.set("Ipv2", this->Ipv2);
+    
     data.set("Vac1", this->Vac1);
     data.set("Iac1", this->Iac1);
     data.set("Pac1", this->Pac1);
   
+#ifdef TL_INVERTER
+    data.set("Vac2", this->Vac2);
+    data.set("Iac2", this->Iac2);
+    data.set("Pac2", this->Pac2);
+    
+    data.set("Vac3", this->Vac3);
+    data.set("Iac3", this->Iac3);
+    data.set("Pac3", this->Pac3);
+#endif
+  
     data.set("Pac", this->Pac);
     data.set("Fac", this->Fac);
-  
   
     data.set("Etoday", this->Etoday);
     data.set("Etotal", this->Etotal);
@@ -231,6 +243,7 @@ InverterData GrowattInverter::getData() {
             data.set("Priority", (String("Unknown ") + this->Priority).c_str());
     }
 
+    // Battery
     switch (this->BatteryType) {
         case 0:
             data.set("Battery", "LeadAcid");
@@ -248,10 +261,22 @@ InverterData GrowattInverter::getData() {
     data.set("Vbat", this->Vbat);
     data.set("SOC", this->SOC);
 
+    // EPS
     data.set("EpsFac", this->EpsFac);
+
     data.set("EpsPac1", this->EpsPac1);
     data.set("EpsVac1", this->EpsVac1);
     data.set("EpsIac1", this->EpsIac1);
+#ifdef TL_INVERTER
+    data.set("EpsPac2", this->EpsPac2);
+    data.set("EpsVac2", this->EpsVac2);
+    data.set("EpsIac2", this->EpsIac2);
+    
+    data.set("EpsPac3", this->EpsPac3);
+    data.set("EpsVac3", this->EpsVac3);
+    data.set("EpsIac3", this->EpsIac3);
+#endif
+
     data.set("EpsLoadPercent", this->EpsLoadPercent);
     data.set("EpsPF", this->EpsPF);
     

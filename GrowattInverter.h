@@ -20,6 +20,9 @@
 
 #define REGISTERS_TO_READ 45
 
+// Uncomment the following line to enable reporting of all 3 phase AC data
+//#define TL_INVERTER
+
 
 class GrowattInverter
 {

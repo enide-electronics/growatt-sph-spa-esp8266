@@ -8,12 +8,11 @@
 
 #include "MqttPublisher.h"
         
-MqttPublisher::MqttPublisher(WiFiClient &espClient, const String &topic, const String &server) {
+MqttPublisher::MqttPublisher(WiFiClient &espClient, const char *baseTopic, const char *server) {
     this->client = new PubSubClient(espClient);
-    this->client->setServer(server.c_str(), 1883);  
+    this->client->setServer(server, 1883);  
     
-    this->topic = topic;
-    this->server = server;
+    this->topic = baseTopic;
     this->clientId = "unknown";
 }
        

@@ -82,7 +82,7 @@ void setupWifi() {
 }
 
 void setupMqtt() {
-    mqtt = new MqttPublisher(espClient, String(MQTT_TOPIC), String(MQTT_SERVER));
+    mqtt = new MqttPublisher(espClient, MQTT_TOPIC, MQTT_SERVER);
     mqtt->setCallback(callback);
     mqtt->addSubscription(SETTINGS_LED_SUBTOPIC);
 }
@@ -119,8 +119,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void setup() {
     pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
-    setupWifi();
     setupInverter();
+    setupWifi();
     setupMqtt();
 }
 
@@ -141,7 +141,7 @@ void loop() {
 
         lastReportSentAtMillis = now;
         if (ledStatus == 2) digitalWrite(BUILTIN_LED, HIGH);   // Turn the LED off
-}
+    }
 
     // inverter tele report
     if (now - lastTeleSentAtMillis > 60000) {

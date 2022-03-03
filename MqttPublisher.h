@@ -16,14 +16,18 @@
 class MqttPublisher {
     private:
         PubSubClient *client;
+        String serverIp;
+        int portNumber;
         String topic;
         String clientId;
         std::vector<String> subscriptions;
+        long lastReconnectAttemptMillis;
         
         void keepConnected();
         
     public:
-        MqttPublisher(WiFiClient &espClient, const char *baseTopic, const char *server);
+        MqttPublisher(WiFiClient &espClient, const char *baseTopic, const char *server, int port = 1883);
+        ~MqttPublisher();
        
         void publishData(InverterData &data);
         void publishTele();
@@ -33,6 +37,7 @@ class MqttPublisher {
         void addSubscription(const char *subtopic);
 
         void loop();
+        bool isConnected();
 };
 
 #endif

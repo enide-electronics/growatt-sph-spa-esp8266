@@ -188,6 +188,10 @@ GrowattInverter::GrowattInverter(Stream &serial, uint8_t slaveAddress) {
     this->EpsPF = 0.0;
 }
 
+GrowattInverter::~GrowattInverter() {
+    delete this->node;
+}
+
 bool GrowattInverter::isDataValid() {
     return this->valid;
 }

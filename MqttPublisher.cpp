@@ -7,13 +7,21 @@
 */
 
 #include "MqttPublisher.h"
+#include "GLog.h"
         
-MqttPublisher::MqttPublisher(WiFiClient &espClient, const char *baseTopic, const char *server) {
+MqttPublisher::MqttPublisher(WiFiClient &espClient, const char *baseTopic, const char *server, int port) {
+    this->serverIp = server;
+    this->portNumber = port;
     this->client = new PubSubClient(espClient);
-    this->client->setServer(server, 1883);  
+    this->client->setServer(serverIp.c_str(), portNumber);  
+    this->lastReconnectAttemptMillis = 0;
     
     this->topic = baseTopic;
     this->clientId = "unknown";
+}
+
+MqttPublisher::~MqttPublisher() {
+    delete this->client;
 }
        
 void MqttPublisher::publishData(InverterData &data) {
@@ -45,11 +53,10 @@ void MqttPublisher::addSubscription(const char *subtopic) {
 }
 
 void MqttPublisher::keepConnected() {
-    // Loop until we're reconnected
-    while (!client->connected()) {
-#ifndef BOARD_IS_ESP_01
-        Serial.print("Attempting MQTT connection...");
-#endif
+    // Don't loop here, do it on the main loop
+    if (!client->connected() && millis() - lastReconnectAttemptMillis > 5000L) {
+        lastReconnectAttemptMillis = millis();
+        GLOG::print("Attempting MQTT connection...");
 
         // Create a random client ID
         clientId = "growatt-";
@@ -57,9 +64,8 @@ void MqttPublisher::keepConnected() {
     
         // Attempt to connect
         if (client->connect(clientId.c_str())) {
-#ifndef BOARD_IS_ESP_01
-            Serial.println("connected");
-#endif      
+            GLOG::println("connected");
+            
             // Once connected, publish an announcement...
             publishTele();
       
@@ -68,13 +74,9 @@ void MqttPublisher::keepConnected() {
                 client->subscribe(s.c_str());
             }
         } else {
-#ifndef BOARD_IS_ESP_01
-            Serial.print("failed, rc=");
-            Serial.print(client->state());
-            Serial.println(" try again in 5 seconds");
-#endif
-            // Wait 5 seconds before retrying
-            delay(5000);
+            GLOG::print("failed, rc=");
+            GLOG::print(client->state());
+            GLOG::println(" try again in 5 seconds");
         }
     }
 }
@@ -82,6 +84,10 @@ void MqttPublisher::keepConnected() {
 void MqttPublisher::loop() {
     keepConnected();
     client->loop();
+}
+
+bool MqttPublisher::isConnected() {
+    return client->connected();
 }
 
 

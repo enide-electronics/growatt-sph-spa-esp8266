@@ -28,6 +28,7 @@ class GrowattInverter
 {
     public:
         GrowattInverter(Stream &serial, uint8_t slaveAddress);
+        ~GrowattInverter();
         uint8_t read();
         bool isDataValid();
     

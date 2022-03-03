@@ -1,3 +1,11 @@
+/*
+  GLog.cpp - Library for the ESP8266/ESP32 Arduino platform
+  Global logging solution (used to prevent logging to the Serial interface)
+
+  Written by JF enide.electronics (at) enide.net
+  Licensed under GNU GPLv3
+*/
+
 #include "GLog.h"
 
 Stream *GLOG::s = NULL;
@@ -62,7 +70,18 @@ void GLOG::print(const String &o) {
     }
 }
     
-void GLOG::setOutput(Stream *stream) {
-    GLOG::s = stream;
+void GLOG::setup() {
+    String arduinoBoard = String(ARDUINO_BOARD);
+    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" || arduinoBoard =="ESP8266_WEMOS_D1MINILITE") {
+        Serial.begin(115200);
+        delay(10);
+        GLOG::s = &Serial;
+    } else {
+        GLOG::s = NULL;
+    }
+}
+
+bool GLOG::isLogEnabled() {
+    return GLOG::s != NULL;
 }
 

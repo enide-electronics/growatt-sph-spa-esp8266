@@ -18,28 +18,28 @@ class WifiAndConfigManager {
     private:
         WiFiManager wm;
         
+        WiFiManagerParameter *deviceNameParam;
         WiFiManagerParameter *softApPasswordParam;
         WiFiManagerParameter *mqttServerParam;
         WiFiManagerParameter *mqttPortParam;
         WiFiManagerParameter *mqttBaseTopicParam;
         WiFiManagerParameter *modbusAddressParam;
-        WiFiManagerParameter *boardEsp01Param;
-        String boardEsp01CustomHtml;
         
+        String deviceName;
         String softApPassword;
         String mqttServer;
         int mqttPort;
         String mqttBaseTopic;
         int modbusAddress;
-        bool boardEsp01;
         
         bool saveRequired;
+        bool rebootRequired;
         
         void load();
         void save();
         void show();
         void saveConfigCallback();
-        void deleteConfigCallback();
+        void handleEraseAll();
         String getParam(String name);
 
     public:
@@ -47,15 +47,16 @@ class WifiAndConfigManager {
 
         void setupWifiAndConfig();
 
+        String getDeviceName();
         String getMqttServer();
         int getMqttPort();
         String getMqttTopic();
         int getModbusAddress();
-        bool isBoardEsp01();
 
         WiFiManager & getWM();
         
-        bool checkforConfigUpdate();
+        bool checkforConfigChanges();
+        bool isRestartRequired();
 };
 
 #endif

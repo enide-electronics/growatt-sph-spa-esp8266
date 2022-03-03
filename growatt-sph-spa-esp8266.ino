@@ -69,32 +69,35 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         // Switch on the LED if an 1 was received as first character
         char cLedStatus = (char)payload[0];
         if (cLedStatus == '1') {
-            digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
+            digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
             ledStatus = 1;                    // but actually the LED is on; this is because
                                         // it is active low on the ESP-01)
         } else if (cLedStatus == '0') {
-            digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+            digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
             ledStatus = 0;
         } else if (cLedStatus == '2') {
-            digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+            digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
             ledStatus = 2;
         }
     }
 }
 
 void setupInverter() {
-    if (wcm.isBoardEsp01()) {
-        Serial.begin(9600);
-        inverter = new GrowattInverter((Stream &) Serial, wcm.getModbusAddress());
-    } else {
+    String arduinoBoard = String(ARDUINO_BOARD);
+    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" || arduinoBoard =="ESP8266_WEMOS_D1MINILITE") {
+        #if !defined(D5) || !defined(D6)
         #define D5 14 //pin mapping of nodemcu and d1_mini
         #define D6 12
+        #endif
         
         #define PIN_RX D6
         #define PIN_TX D5
         _softSerial = new SoftwareSerial(PIN_RX, PIN_TX);
         _softSerial->begin(9600);
         inverter = new GrowattInverter((Stream &) (*_softSerial), wcm.getModbusAddress());
+    } else {
+        Serial.begin(9600);
+        inverter = new GrowattInverter((Stream &) Serial, wcm.getModbusAddress());
     }
 }
 
@@ -105,21 +108,18 @@ void setupMqtt() {
 }
 
 void setupLogger() {
-    if (wcm.isBoardEsp01()) {
-        GLOG::setOutput(NULL);
-    } else {
-        Serial.begin(115200);
-        delay(10);
-        GLOG::setOutput(&Serial);
-    }
+    GLOG::setup();
+    wcm.getWM().setDebugOutput(GLOG::isLogEnabled());
 }
 
 void applyNewConfiguration() {
-    // delete old objects
     delay(1000);
+    
+    // delete old objects
     delete inverter;
     delete mqtt;
     espClient.stop();
+    
     if (_softSerial) {
         delete _softSerial;
         _softSerial = NULL;
@@ -133,18 +133,25 @@ void applyNewConfiguration() {
 
 void setup() {
 
-    pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+    pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
 
-    wcm.setupWifiAndConfig();
     setupLogger();
+    wcm.setupWifiAndConfig();
     setupInverter();
     setupMqtt();
 }
 
 void loop() {
     wcm.getWM().process(); // wm web config portal
-    if (wcm.checkforConfigUpdate()) {
-        applyNewConfiguration();
+    
+    // handle config changes
+    if (wcm.checkforConfigChanges()) {
+        if (wcm.isRestartRequired()) {
+            delay(1000);
+            ESP.restart();
+        } else {
+            applyNewConfiguration();
+        }
     }
     
     mqtt->loop();
@@ -153,7 +160,7 @@ void loop() {
 
     // inverter report
     if (mqtt->isConnected() && now - lastReportSentAtMillis > 5000) {
-        if (ledStatus == 2) digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on
+        if (ledStatus == 2) digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on
         inverter->read();
 
         if (inverter->isDataValid()) {
@@ -162,7 +169,7 @@ void loop() {
         }
 
         lastReportSentAtMillis = now;
-        if (ledStatus == 2) digitalWrite(BUILTIN_LED, HIGH);   // Turn the LED off
+        if (ledStatus == 2) digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
     }
 
     // inverter tele report

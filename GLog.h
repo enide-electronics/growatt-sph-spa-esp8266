@@ -1,3 +1,11 @@
+/*
+  GLog.h - Library header for the ESP8266/ESP32 Arduino platform
+  Global logging solution (used to prevent logging to the Serial interface)
+
+  Written by JF enide.electronics (at) enide.net
+  Licensed under GNU GPLv3
+*/
+
 #ifndef G_LOG_H
 #define G_LOG_H
 
@@ -16,7 +24,8 @@ class GLOG {
         static void println(const String &o);
         static void print(const String &o);
         
-        static void setOutput(Stream *s);
+        static void setup();
+        static bool isLogEnabled();
         
     private:
         static Stream *s;

@@ -6,7 +6,7 @@ Many ideas to implement this project came from other projects, most notably:
 - [growatt-esp8266](https://github.com/jkairys/growatt-esp8266)
 - [growatt-rs232-reader](https://github.com/lemval/growatt-rs232-reader)
 
-## Building it:
+## Building it
 At the time I wrote this project I used the Arduino "IDE" version 1.8.16 and the following libraries
 - esp8266 core versions 2.6.3 & 2.7.4 (both work fine and I prefer the latter)
 - pubsubclient version 2.8.0
@@ -16,7 +16,13 @@ At the time I wrote this project I used the Arduino "IDE" version 1.8.16 and the
 
 You'll need to add them to your Arduino "IDE" and then you should be able to compile the code.
 
-## Configuration:
+## Downloading a pre-built binary
+If compiling code is not your thing, *you can download a prebuilt binary file* from the bin folder.
+There are currently two pre-built binary files available:
+- `generic`: for ESP-01 boards as it uses the hardware serial to communicate with the inverter
+- `nodemcu`: for NodeMCU/WemosD1 boards, it uses a SoftwareSerial port on pins D5 and D6 to communicate with the inverter... the USB port is used for debug messages
+
+## Configuration
 If you're using version 1.0, which BTW is deprecated, you'll need to modify the "settings.h" file and add your Wifi and MQTT settings in there, before building the project.
 
 Starting with *version 2.0*, everything is *configured via WiFiManager's Config Portal / Web Portal* and stored in the SPIFFS file system, in a JSON file.

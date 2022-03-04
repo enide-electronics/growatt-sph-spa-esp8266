@@ -22,11 +22,13 @@ If you're using version 1.0, which BTW is deprecated, you'll need to modify the 
 Starting with *version 2.0*, everything is *configured via WiFiManager's Config Portal / Web Portal* and stored in the SPIFFS file system, in a JSON file.
 So when powering up the board for the first time, after uploading the firmware, you'll be presented with a WiFi network named `growatt-sph-spa-esp8266` from where you can select to which network the board should connect to and the remaining settings.
 ### The main screen
-![](images/ss01-main.png)
+<img src='images/ss01-main.png' width='320px'>
+
 ### The WiFi settings screen
-![](images/ss02-wifi.png)
+<img src='images/ss02-wifi.png' width='320px'>
+
 ### The setup screen with the remaining settings
-![](images/ss03-setup.png)
+<img src='images/ss03-setup.png' width='320px'>
 
 ##
 After that initial setup is complete, you will still be able to access the configuration portal on the IP address assigned to the board, on the network it's connected to, and make changes to the configuration. All parameters can be changed on the fly without the need for a restart, except for the `Device name` which requires a restart because it is used on DHCP requests and WiFi SoftAP.
@@ -34,8 +36,8 @@ After that initial setup is complete, you will still be able to access the confi
 ## Using it
 You'll need an adapter board with a MAX3232 or similar 3.3V RS232 converter to connect between the ESP8266 board and the inverter RS232 port.
 I use a clone of the [WiFi232 Modem](http://biosrhythm.com/?page_id=1453) I built myself but you can use any other ESP board like the NodeMCU or a Wemos D1 Mini ([Pro](https://www.wemos.cc/en/latest/d1/d1_mini_pro.html) or [Lite](https://www.wemos.cc/en/latest/d1/d1_mini_lite.html)) and pair it with a max3232 level converter, connected to pins D5 and D6.
-![](images/img02-esp01.jpg]
-![](images/img03-esp01-close-up.jpg]
+<img src='images/img02-esp01.jpg' width='640px'>
+<img src='images/img03-esp01-close-up.jpg' width='640px'>
 
 As mentioned above, when using a NodeMCU or a Wemos D1 board, pins D5 and D6 are the soft serial port used to communicate with the inverter at 9600bps.
 It's possible to power the board from the inverter if you add a voltage regulator to convert the 8V down to 3.3v, required by the ESP8266.
@@ -60,7 +62,8 @@ credit: https://github.com/jkairys/growatt-esp8266
 ```
 
 ## The Growatt SPH and SPA inverters' modbus input register addresses
-![](images/img01-inverter.jpg]
+<img src='images/img01-inverter.jpg' width='640px'>
+
 These inverters use a different modbus input register map from the one found on growatt-esp8266 project.
 Below are the registers currently being read by this project and the data they contain.
 

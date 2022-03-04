@@ -6,18 +6,46 @@ Many ideas to implement this project came from other projects, most notably:
 - [growatt-esp8266](https://github.com/jkairys/growatt-esp8266)
 - [growatt-rs232-reader](https://github.com/lemval/growatt-rs232-reader)
 
-## Configuration:
-You need to modify the "settings.h" file and add your Wifi and MQTT settings.
-
-## Building it:
+## Building it
 At the time I wrote this project I used the Arduino "IDE" version 1.8.16 and the following libraries
 - esp8266 core versions 2.6.3 & 2.7.4 (both work fine and I prefer the latter)
 - pubsubclient version 2.8.0
 - modbusmaster version 2.0.1
+- wifimanager version 2.0.5-beta
+- arduinojson version 6.19.2
+
+You'll need to add them to your Arduino "IDE" and then you should be able to compile the code.
+
+## Downloading a pre-built binary
+If compiling code is not your thing, *you can download a prebuilt binary file* from the bin folder.
+There are currently two pre-built binary files available:
+- `generic`: for ESP-01 boards as it uses the hardware serial to communicate with the inverter
+- `nodemcu`: for NodeMCU/WemosD1 boards, it uses a SoftwareSerial port on pins D5 and D6 to communicate with the inverter... the USB port is used for debug messages
+
+## Configuration
+If you're using version 1.0, which BTW is deprecated, you'll need to modify the "settings.h" file and add your Wifi and MQTT settings in there, before building the project.
+
+Starting with *version 2.0*, everything is *configured via WiFiManager's Config Portal / Web Portal* and stored in the SPIFFS file system, in a JSON file.
+So when powering up the board for the first time, after uploading the firmware, you'll be presented with a WiFi network named `growatt-sph-spa-esp8266` from where you can select to which network the board should connect to and the remaining settings.
+### The main screen
+<img src='images/ss01-main.png' width='320px'>
+
+### The WiFi settings screen
+<img src='images/ss02-wifi.png' width='320px'>
+
+### The setup screen with the remaining settings
+<img src='images/ss03-setup.png' width='320px'>
+
+##
+After that initial setup is complete, you will still be able to access the configuration portal on the IP address assigned to the board, on the network it's connected to, and make changes to the configuration. All parameters can be changed on the fly without the need for a restart, except for the `Device name` which requires a restart because it is used on DHCP requests and WiFi SoftAP.
 
 ## Using it
-You'll need ad adapter board with a MAX3232 or similar 3.3V RS232 converter to connect between the ESP8266 board and the inverter RS232 port.
-As seen below, pins D5 and D6 are the soft serial port used to communicate with the inverter at 9600bps.
+You'll need an adapter board with a MAX3232 or similar 3.3V RS232 converter to connect between the ESP8266 board and the inverter RS232 port.
+I use a clone of the [WiFi232 Modem](http://biosrhythm.com/?page_id=1453) I built myself but you can use any other ESP board like the NodeMCU or a Wemos D1 Mini ([Pro](https://www.wemos.cc/en/latest/d1/d1_mini_pro.html) or [Lite](https://www.wemos.cc/en/latest/d1/d1_mini_lite.html)) and pair it with a max3232 level converter, connected to pins D5 and D6.
+<img src='images/img02-esp01.jpg' width='640px'>
+<img src='images/img03-esp01-close-up.jpg' width='640px'>
+
+As mentioned above, when using a NodeMCU or a Wemos D1 board, pins D5 and D6 are the soft serial port used to communicate with the inverter at 9600bps.
 It's possible to power the board from the inverter if you add a voltage regulator to convert the 8V down to 3.3v, required by the ESP8266.
 
 Here's a sketch of the wiring diagram for a Wemos D1:
@@ -39,9 +67,11 @@ Here's a sketch of the wiring diagram for a Wemos D1:
 credit: https://github.com/jkairys/growatt-esp8266
 ```
 
-## The Growatt SPH and SPA inverters
+## The Growatt SPH and SPA inverters' modbus input register addresses
+<img src='images/img01-inverter.jpg' width='640px'>
+
 These inverters use a different modbus input register map from the one found on growatt-esp8266 project.
-Below are the registers currently being read by this project and what data they contain.
+Below are the registers currently being read by this project and the data they contain.
 
 ### Main input registers
 ```
@@ -49,8 +79,9 @@ Below are the registers currently being read by this project and what data they 
     0 Standby
     1 Normal / Checking
     3 Error / Fault
-    5 Normal with Solar power
-    6 Normal without Solar power
+    5 Normal with Solar power ***
+    6 Normal without Solar power ***
+   (*** from my own observations)
 
 3   Vpv1   (PV1 DC voltage)
 4   Ipv1   (PV1 DC current)

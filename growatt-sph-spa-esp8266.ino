@@ -59,7 +59,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     GLOG::print(topic);
     GLOG::print("] ");
     for (unsigned int i = 0; i < length; i++) {
-        GLOG::print((char)payload[i]);
+        GLOG::print((unsigned char)payload[i]);
     }
     GLOG::println("");
 
@@ -159,7 +159,7 @@ void loop() {
     unsigned long now = millis();
 
     // inverter report
-    if (mqtt->isConnected() && now - lastReportSentAtMillis > 5000) {
+    if (mqtt->isConnected() && now - lastReportSentAtMillis > wcm.getModbusPollingInSeconds() * 1000) {
         if (ledStatus == 2) digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on
         inverter->read();
 

@@ -15,6 +15,8 @@ class GLOG {
     public:
         static void println(unsigned char v);
         static void print(unsigned char v);
+        static void println(char v);
+        static void print(char v);
         static void println(int v);
         static void print(int v);
         static void println(const char * msg);

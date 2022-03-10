@@ -76,7 +76,7 @@ void MqttPublisher::keepConnected() {
         } else {
             GLOG::print("failed, rc=");
             GLOG::print(client->state());
-            GLOG::println(" try again in 5 seconds");
+            GLOG::println(" retry in 5 seconds");
         }
     }
 }

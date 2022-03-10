@@ -93,6 +93,7 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     wm.addParameter(mqttPortParam);
     wm.addParameter(mqttBaseTopicParam);
     wm.addParameter(modbusAddressParam);
+    wm.addParameter(modbusPollingInSecondsParam);
 
     WiFi.mode(WIFI_STA);
     WiFi.hostname(deviceName.c_str());

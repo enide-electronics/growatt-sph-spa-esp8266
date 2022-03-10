@@ -18,25 +18,24 @@
 
 #include "InverterData.h"
 
-#define REGISTERS_TO_READ 45
-
 // Uncomment the following line to enable reporting of all 3 phase AC data
 //#define TL_INVERTER
-
 
 class GrowattInverter
 {
     public:
         GrowattInverter(Stream &serial, uint8_t slaveAddress);
         ~GrowattInverter();
-        uint8_t read();
+        void read();
         bool isDataValid();
     
-        InverterData getData();
+        InverterData getData(bool fullSet = false);
 
     private:
         float glueFloat(uint16_t w1, uint16_t w2);
         ModbusMaster * node;
+        int currentStateIdx;
+        int lastUpdatedState;
 
         float Ppv1;
         float Vpv1;

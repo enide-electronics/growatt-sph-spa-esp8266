@@ -56,7 +56,7 @@ void MqttPublisher::keepConnected() {
     // Don't loop here, do it on the main loop
     if (!client->connected() && millis() - lastReconnectAttemptMillis > 5000L) {
         lastReconnectAttemptMillis = millis();
-        GLOG::print("Attempting MQTT connection...");
+        GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + "...");
 
         // Create a random client ID
         clientId = "growatt-";

@@ -33,9 +33,12 @@ class GrowattInverter
 
     private:
         float glueFloat(uint16_t w1, uint16_t w2);
+        void dumpRegisters(uint8_t length);
+        void incrementStateIdx();
+        
         ModbusMaster * node;
-        int currentStateIdx;
-        int lastUpdatedState;
+        uint8_t currentStateIdx;
+        uint8_t lastUpdatedState;
 
         float Ppv1;
         float Vpv1;

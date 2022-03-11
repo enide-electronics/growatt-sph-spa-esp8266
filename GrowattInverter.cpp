@@ -10,12 +10,20 @@
 #include "GrowattInverter.h"
 #include "GLog.h"
 
-static int stateSequence[] = {0, 1, 3, 0, 1, 4, 0, 1, 3, 0, 1, 4, 2};
-static void incrementStateIdx(int *idx) {
-    *idx = *idx + 1;
+void GrowattInverter::dumpRegisters(uint8_t length) {
+    GLOG::print(", hex[");
+    for (uint8_t i = 0; i < length; i++) {
+        GLOG::print(String(this->node->getResponseBuffer(i), HEX) + ":");
+    }
+    GLOG::print("]");
+}
+
+static uint8_t stateSequence[] = {0, 1, 3, 0, 1, 4, 0, 1, 3, 0, 1, 4, 2};
+void GrowattInverter::incrementStateIdx() {
+    currentStateIdx += 1;
     
-    if (*idx >= (sizeof(stateSequence)/sizeof(int))) {
-        *idx = 0;
+    if (currentStateIdx >= (sizeof(stateSequence)/sizeof(uint8_t))) {
+        currentStateIdx = 0;
     }   
 }
 
@@ -32,7 +40,7 @@ float GrowattInverter::glueFloat(uint16_t w1, uint16_t w0) {
 
 void GrowattInverter::read() {
     
-    GLOG::print(String(",state=") + stateSequence[currentStateIdx]);
+    GLOG::print(String(", state=") + stateSequence[currentStateIdx]);
 
     if (stateSequence[currentStateIdx] == 0) {
         uint8_t result1 = this->node->readInputRegisters(0, 12);
@@ -106,7 +114,7 @@ void GrowattInverter::read() {
         // start reading at register 1009 and read up to 6 registers
         uint8_t result4 = this->node->readInputRegisters(1009, 6);
         if (result4 == this->node->ku8MBSuccess) {
-
+            dumpRegisters(6);
             this->Pdischarge = this->glueFloat(this->node->getResponseBuffer(0), this->node->getResponseBuffer(1)); //1009, 1010
             this->Pcharge = this->glueFloat(this->node->getResponseBuffer(2), this->node->getResponseBuffer(3)); //1011, 1012
             this->Vbat = this->glueFloat(0, this->node->getResponseBuffer(4)); //1013
@@ -150,7 +158,7 @@ void GrowattInverter::read() {
     }
     
     lastUpdatedState = stateSequence[currentStateIdx];
-    incrementStateIdx(&currentStateIdx);
+    incrementStateIdx();
 }
 
 

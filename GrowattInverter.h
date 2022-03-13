@@ -94,7 +94,7 @@ class GrowattInverter
         float EpsVac3;
         float EpsIac3;
         
-        uint16_t EpsLoadPercent; // 0 .. 100
+        float EpsLoadPercent; // 0 .. 100
         float EpsPF; // -1.0 .. 1.0
 
         bool valid;

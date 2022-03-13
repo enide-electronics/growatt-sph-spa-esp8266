@@ -147,7 +147,7 @@ void GrowattInverter::read() {
             this->EpsPac3 = this->glueFloat(this->node->getResponseBuffer(11), this->node->getResponseBuffer(12)); //1078, 1079
     #endif
 
-            this->EpsLoadPercent = this->node->getResponseBuffer(13); //1080
+            this->EpsLoadPercent = this->glueFloat(0, this->node->getResponseBuffer(13)); //1080
             this->EpsPF = this->glueFloat(0, this->node->getResponseBuffer(14)) / 100.0; //1081
             
             this->valid = true;

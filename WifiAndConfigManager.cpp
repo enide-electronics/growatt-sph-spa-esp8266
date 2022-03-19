@@ -10,12 +10,13 @@
 #include <FS.h>
 #include "GLog.h"
 
+#define DEVICE_NAME_K "device_name"
 #define SOFTAP_PASSWORD_K "web_password"
 #define MQTT_SERVER_K "mqtt_server"
 #define MQTT_PORT_K "mqtt_port"
 #define MQTT_TOPIC_K "mqtt_topic"
 #define MODBUS_ADDR_K "modbus_addr"
-#define DEVICE_NAME_K "device_name"
+#define MODBUS_POLLING_K "modbus_poll_secs"
 
 #define DEFAULT_TOPIC "growatt"
 #define DEFAULT_SOFTAP_PASSWORD "12345678"
@@ -28,10 +29,11 @@ WifiAndConfigManager::WifiAndConfigManager() {
     // config vars
     deviceName = DEFAULT_DEVICE_NAME;
     softApPassword = DEFAULT_SOFTAP_PASSWORD;
-    mqttServer = "";
+    mqttServer = "localhost";
     mqttPort = 1883;
     mqttBaseTopic = DEFAULT_TOPIC;
     modbusAddress = 1;
+    modbusPollingInSeconds = 5;
     
     // config var web params
     deviceNameParam = NULL;
@@ -43,7 +45,7 @@ WifiAndConfigManager::WifiAndConfigManager() {
 }
 
 void WifiAndConfigManager::saveConfigCallback() {
-    GLOG::println("SAVE REQUIRED");
+    GLOG::println("SAVE IS REQUIRED");
     saveRequired = true;
 }
 
@@ -74,7 +76,8 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     mqttServerParam = new WiFiManagerParameter("server", "MQTT server", mqttServer.c_str(), 40);
     mqttPortParam = new WiFiManagerParameter("port", "MQTT port", String(mqttPort).c_str(), 6);
     mqttBaseTopicParam = new WiFiManagerParameter("topic", "MQTT base topic", mqttBaseTopic.c_str(), 24);
-    modbusAddressParam = new WiFiManagerParameter("modbus", "Modbus address", String(modbusAddress).c_str(), 24);
+    modbusAddressParam = new WiFiManagerParameter("modbus", "Modbus address", String(modbusAddress).c_str(), 3);
+    modbusPollingInSecondsParam = new WiFiManagerParameter("modbuspoll", "Modbus polling (secs)", String(modbusPollingInSeconds).c_str(), 3);
 
     //set config callbacks
     wm.setSaveConfigCallback(std::bind(&WifiAndConfigManager::saveConfigCallback, this));
@@ -90,6 +93,7 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     wm.addParameter(mqttPortParam);
     wm.addParameter(mqttBaseTopicParam);
     wm.addParameter(modbusAddressParam);
+    wm.addParameter(modbusPollingInSecondsParam);
 
     WiFi.mode(WIFI_STA);
     WiFi.hostname(deviceName.c_str());
@@ -118,13 +122,7 @@ void WifiAndConfigManager::setupWifiAndConfig() {
 
     randomSeed(micros());
 
-    // copy values back to our variables
-    deviceName = String(deviceNameParam->getValue());
-    softApPassword = String(softApPasswordParam->getValue());
-    mqttServer = String(mqttServerParam->getValue());
-    mqttPort = String(mqttPortParam->getValue()).toInt();
-    mqttBaseTopic = String(mqttBaseTopicParam->getValue());
-    modbusAddress = String(modbusAddressParam->getValue()).toInt();
+    copyFromParamsToVars();
 
     // now save it to the SPIFFS file
     if (saveRequired) {
@@ -135,16 +133,16 @@ void WifiAndConfigManager::setupWifiAndConfig() {
 
 void WifiAndConfigManager::load() {
     //read configuration from FS json
-    GLOG::println("mounting FS...");
+    GLOG::println("Mounting FS...");
 
     if (SPIFFS.begin()) {
-        GLOG::println("mounted file system");
+        GLOG::println("Mounted file system");
         if (SPIFFS.exists("/config.json")) {
             //file exists, reading and loading
-            GLOG::println("reading config file");
+            GLOG::println("Reading config file");
             File configFile = SPIFFS.open("/config.json", "r");
             if (configFile) {
-                GLOG::println("opened config file");
+                GLOG::println("Opened config file");
                 size_t size = configFile.size();
                 // Allocate a buffer to store contents of the file.
                 std::unique_ptr<char[]> buf(new char[size]);
@@ -199,14 +197,20 @@ void WifiAndConfigManager::load() {
                     } else {
                         modbusAddress = 1;
                     }
+                    
+                    if (json.containsKey(MODBUS_POLLING_K)) {
+                        modbusPollingInSeconds = json[MODBUS_POLLING_K];
+                    } else {
+                        modbusPollingInSeconds = 5;
+                    }
                 } else {
-                    GLOG::println("failed to load json config");
+                    GLOG::println("Failed to load json config");
                 }
                 configFile.close();
             }
         }
     } else {
-        GLOG::println("failed to mount FS");
+        GLOG::println("Failed to mount FS");
     }
     //end read
 
@@ -215,7 +219,7 @@ void WifiAndConfigManager::load() {
 void WifiAndConfigManager::save() {
     //save the custom parameters to FS
 
-    GLOG::println("saving config");
+    GLOG::println("Saving config");
 
 #if ARDUINOJSON_VERSION_MAJOR >= 6
     DynamicJsonDocument json(1024);
@@ -230,10 +234,11 @@ void WifiAndConfigManager::save() {
     json[MQTT_PORT_K] = mqttPort;
     json[MQTT_TOPIC_K] = mqttBaseTopic.c_str();
     json[MODBUS_ADDR_K] = modbusAddress;
+    json[MODBUS_POLLING_K] = modbusPollingInSeconds;
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
-        GLOG::println("failed to open config file for writing");
+        GLOG::println("Failed to open config file for writing");
     }
 
 #if ARDUINOJSON_VERSION_MAJOR >= 6
@@ -246,6 +251,17 @@ void WifiAndConfigManager::save() {
     //end save
 }
 
+void WifiAndConfigManager::copyFromParamsToVars() {
+    // copy values back to our variables
+    deviceName = String(deviceNameParam->getValue());
+    softApPassword = String(softApPasswordParam->getValue());
+    mqttServer = String(mqttServerParam->getValue());
+    mqttPort = String(mqttPortParam->getValue()).toInt();
+    mqttBaseTopic = String(mqttBaseTopicParam->getValue());
+    modbusAddress = String(modbusAddressParam->getValue()).toInt();
+    modbusPollingInSeconds = String(modbusPollingInSecondsParam->getValue()).toInt();
+}
+
 String WifiAndConfigManager::getParam(String name){
     //read parameter from server, for custom hmtl input
     String value;
@@ -256,6 +272,7 @@ String WifiAndConfigManager::getParam(String name){
 }
 
 void WifiAndConfigManager::show() {
+    GLOG::println("---------------------------");
     GLOG::print("Device name   : ");
     GLOG::println(deviceName);
     
@@ -273,6 +290,13 @@ void WifiAndConfigManager::show() {
     
     GLOG::print("Modbus Address: ");
     GLOG::println(modbusAddress);
+    
+    GLOG::print("Modbus Poll(s): ");
+    GLOG::println(modbusPollingInSeconds);
+}
+
+String WifiAndConfigManager::getDeviceName() {
+    return deviceName;
 }
 
 String WifiAndConfigManager::getMqttServer() {
@@ -291,10 +315,9 @@ int WifiAndConfigManager::getModbusAddress() {
     return modbusAddress;
 }
 
-String WifiAndConfigManager::getDeviceName() {
-    return deviceName;
+int WifiAndConfigManager::getModbusPollingInSeconds() {
+    return modbusPollingInSeconds;
 }
-
 
 WiFiManager & WifiAndConfigManager::getWM() {
     return wm;
@@ -309,13 +332,7 @@ bool WifiAndConfigManager::checkforConfigChanges() {
             rebootRequired = true;
         }
         
-        // copy values back to our variables
-        deviceName = String(deviceNameParam->getValue());
-        softApPassword = String(softApPasswordParam->getValue());
-        mqttServer = String(mqttServerParam->getValue());
-        mqttPort = String(mqttPortParam->getValue()).toInt();
-        mqttBaseTopic = String(mqttBaseTopicParam->getValue());
-        modbusAddress = String(modbusAddressParam->getValue()).toInt();
+        copyFromParamsToVars();
         
         save();
         saveRequired = false;

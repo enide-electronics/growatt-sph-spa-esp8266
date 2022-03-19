@@ -22,6 +22,18 @@ void GLOG::print(unsigned char v) {
     }
 }
 
+void GLOG::println(char v) {
+    if (GLOG::s) {
+        GLOG::s->println(v);
+    }
+}
+
+void GLOG::print(char v) {
+    if (GLOG::s) {
+        GLOG::s->print(v);
+    }
+}
+
 void GLOG::println(int v) {
     if (GLOG::s) {
         GLOG::s->println(v);

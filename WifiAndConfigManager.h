@@ -22,6 +22,8 @@ class WifiAndConfigManager {
         WiFiManagerParameter *softApPasswordParam;
         WiFiManagerParameter *mqttServerParam;
         WiFiManagerParameter *mqttPortParam;
+        WiFiManagerParameter *mqttUsernameParam;
+        WiFiManagerParameter *mqttPasswordParam;
         WiFiManagerParameter *mqttBaseTopicParam;
         WiFiManagerParameter *modbusAddressParam;
         WiFiManagerParameter *modbusPollingInSecondsParam;
@@ -30,6 +32,8 @@ class WifiAndConfigManager {
         String softApPassword;
         String mqttServer;
         int mqttPort;
+        String mqttUsername;
+        String mqttPassword;
         String mqttBaseTopic;
         int modbusAddress;
         int modbusPollingInSeconds;
@@ -53,6 +57,8 @@ class WifiAndConfigManager {
         String getDeviceName();
         String getMqttServer();
         int getMqttPort();
+        String getMqttUsername();
+        String getMqttPassword();
         String getMqttTopic();
         int getModbusAddress();
         int getModbusPollingInSeconds();

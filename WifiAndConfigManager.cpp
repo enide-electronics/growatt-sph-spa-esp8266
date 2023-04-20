@@ -14,6 +14,8 @@
 #define SOFTAP_PASSWORD_K "web_password"
 #define MQTT_SERVER_K "mqtt_server"
 #define MQTT_PORT_K "mqtt_port"
+#define MQTT_USERNAME_K "mqtt_username"
+#define MQTT_PASSWORD_K "mqtt_password"
 #define MQTT_TOPIC_K "mqtt_topic"
 #define MODBUS_ADDR_K "modbus_addr"
 #define MODBUS_POLLING_K "modbus_poll_secs"
@@ -31,6 +33,8 @@ WifiAndConfigManager::WifiAndConfigManager() {
     softApPassword = DEFAULT_SOFTAP_PASSWORD;
     mqttServer = "localhost";
     mqttPort = 1883;
+    mqttUsername = "";
+    mqttPassword = "";
     mqttBaseTopic = DEFAULT_TOPIC;
     modbusAddress = 1;
     modbusPollingInSeconds = 5;
@@ -40,6 +44,8 @@ WifiAndConfigManager::WifiAndConfigManager() {
     softApPasswordParam = NULL;
     mqttServerParam = NULL;
     mqttPortParam = NULL;
+    mqttUsernameParam = NULL;
+    mqttPasswordParam = NULL;
     mqttBaseTopicParam = NULL;
     modbusAddressParam = NULL;
 }
@@ -75,6 +81,8 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     softApPasswordParam = new WiFiManagerParameter("wifipass", "SoftAP Password", softApPassword.c_str(), 32);
     mqttServerParam = new WiFiManagerParameter("server", "MQTT server", mqttServer.c_str(), 40);
     mqttPortParam = new WiFiManagerParameter("port", "MQTT port", String(mqttPort).c_str(), 6);
+    mqttUsernameParam = new WiFiManagerParameter("username", "MQTT username", String(mqttUsername).c_str(), 32);
+    mqttPasswordParam = new WiFiManagerParameter("password", "MQTT password", String(mqttPassword).c_str(), 32);
     mqttBaseTopicParam = new WiFiManagerParameter("topic", "MQTT base topic", mqttBaseTopic.c_str(), 24);
     modbusAddressParam = new WiFiManagerParameter("modbus", "Modbus address", String(modbusAddress).c_str(), 3);
     modbusPollingInSecondsParam = new WiFiManagerParameter("modbuspoll", "Modbus polling (secs)", String(modbusPollingInSeconds).c_str(), 3);
@@ -91,6 +99,8 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     wm.addParameter(softApPasswordParam);
     wm.addParameter(mqttServerParam);
     wm.addParameter(mqttPortParam);
+    wm.addParameter(mqttUsernameParam);
+    wm.addParameter(mqttPasswordParam);
     wm.addParameter(mqttBaseTopicParam);
     wm.addParameter(modbusAddressParam);
     wm.addParameter(modbusPollingInSecondsParam);
@@ -191,6 +201,18 @@ void WifiAndConfigManager::load() {
                     } else {
                         mqttBaseTopic = DEFAULT_TOPIC;
                     }
+                    
+                    if (json.containsKey(MQTT_USERNAME_K)) {
+                        mqttUsername = json[MQTT_USERNAME_K].as<String>();
+                    } else {
+                        mqttUsername = "";
+                    }
+                    
+                    if (json.containsKey(MQTT_PASSWORD_K)) {
+                        mqttPassword = json[MQTT_PASSWORD_K].as<String>();
+                    } else {
+                        mqttPassword = "";
+                    }
 
                     if (json.containsKey(MODBUS_ADDR_K)) {
                         modbusAddress = json[MODBUS_ADDR_K];
@@ -232,6 +254,10 @@ void WifiAndConfigManager::save() {
     json[SOFTAP_PASSWORD_K] = softApPassword.c_str();
     json[MQTT_SERVER_K] = mqttServer.c_str();
     json[MQTT_PORT_K] = mqttPort;
+    mqttUsername.trim();
+    json[MQTT_USERNAME_K] = mqttUsername.c_str();
+    mqttPassword.trim();
+    json[MQTT_PASSWORD_K] = mqttPassword.c_str();
     json[MQTT_TOPIC_K] = mqttBaseTopic.c_str();
     json[MODBUS_ADDR_K] = modbusAddress;
     json[MODBUS_POLLING_K] = modbusPollingInSeconds;
@@ -257,6 +283,10 @@ void WifiAndConfigManager::copyFromParamsToVars() {
     softApPassword = String(softApPasswordParam->getValue());
     mqttServer = String(mqttServerParam->getValue());
     mqttPort = String(mqttPortParam->getValue()).toInt();
+    mqttUsername = String(mqttUsernameParam->getValue());
+    mqttUsername.trim();
+    mqttPassword = String(mqttPasswordParam->getValue());
+    mqttPassword.trim();
     mqttBaseTopic = String(mqttBaseTopicParam->getValue());
     modbusAddress = String(modbusAddressParam->getValue()).toInt();
     modbusPollingInSeconds = String(modbusPollingInSecondsParam->getValue()).toInt();
@@ -285,6 +315,12 @@ void WifiAndConfigManager::show() {
     GLOG::print("Mqtt port     : ");
     GLOG::println(mqttPort);
     
+    GLOG::print("Mqtt Username : ");
+    GLOG::println(mqttUsername);
+    
+    GLOG::print("Mqtt Password : ");
+    GLOG::println(mqttPassword);
+    
     GLOG::print("Mqtt Topic    : ");
     GLOG::println(mqttBaseTopic);
     
@@ -305,6 +341,14 @@ String WifiAndConfigManager::getMqttServer() {
 
 int WifiAndConfigManager::getMqttPort() {
     return mqttPort;
+}
+
+String WifiAndConfigManager::getMqttUsername() {
+    return mqttUsername;
+}
+
+String WifiAndConfigManager::getMqttPassword() {
+    return mqttPassword;
 }
 
 String WifiAndConfigManager::getMqttTopic() {

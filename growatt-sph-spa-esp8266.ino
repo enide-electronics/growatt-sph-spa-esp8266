@@ -102,7 +102,7 @@ void setupInverter() {
 }
 
 void setupMqtt() {
-    mqtt = new MqttPublisher(espClient, wcm.getMqttTopic().c_str(), wcm.getMqttServer().c_str(), wcm.getMqttPort());
+    mqtt = new MqttPublisher(espClient, wcm.getMqttUsername().c_str(), wcm.getMqttPassword().c_str(), wcm.getMqttTopic().c_str(), wcm.getMqttServer().c_str(), wcm.getMqttPort());
     mqtt->setCallback(mqttCallback);
     mqtt->addSubscription(SETTINGS_LED_SUBTOPIC);
 }

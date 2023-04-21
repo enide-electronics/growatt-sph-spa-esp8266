@@ -69,7 +69,7 @@ void MqttPublisher::keepConnected() {
             GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + "...");
             success = client->connect(clientId.c_str());
         } else {
-            GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + " with username '" + username + "' and password with " + password.length() + " chars");
+            GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + " with username '" + username + "' and password with " + password.length() + " chars...");
             success = client->connect(clientId.c_str(), username.c_str(), password.c_str());
 
         }

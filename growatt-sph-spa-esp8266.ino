@@ -84,7 +84,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
 void setupInverter() {
     String arduinoBoard = String(ARDUINO_BOARD);
-    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" || arduinoBoard =="ESP8266_WEMOS_D1MINILITE") {
+    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" 
+    || arduinoBoard =="ESP8266_WEMOS_D1MINILITE" || arduinoBoard == "ESP8266_WEMOS_D1MINI") {
         #if !defined(D5) || !defined(D6)
         #define D5 14 //pin mapping of nodemcu and d1_mini
         #define D6 12

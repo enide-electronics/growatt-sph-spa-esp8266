@@ -9,9 +9,11 @@
 #include "MqttPublisher.h"
 #include "GLog.h"
         
-MqttPublisher::MqttPublisher(WiFiClient &espClient, const char *baseTopic, const char *server, int port) {
+MqttPublisher::MqttPublisher(WiFiClient &espClient, const char *username, const char * password, const char *baseTopic, const char *server, int port) {
     this->serverIp = server;
     this->portNumber = port;
+    this->username = username;
+    this->password = password;
     this->client = new PubSubClient(espClient);
     this->client->setServer(serverIp.c_str(), portNumber);  
     this->lastReconnectAttemptMillis = 0;
@@ -56,14 +58,22 @@ void MqttPublisher::keepConnected() {
     // Don't loop here, do it on the main loop
     if (!client->connected() && millis() - lastReconnectAttemptMillis > 5000L) {
         lastReconnectAttemptMillis = millis();
-        GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + "...");
 
         // Create a random client ID
         clientId = "growatt-";
         clientId += String(random(0xffff), HEX);
     
         // Attempt to connect
-        if (client->connect(clientId.c_str())) {
+        bool success;
+        if (username.length() == 0 && password.length() == 0) {
+            GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + "...");
+            success = client->connect(clientId.c_str());
+        } else {
+            GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + " with username '" + username + "' and password with " + password.length() + " chars...");
+            success = client->connect(clientId.c_str(), username.c_str(), password.c_str());
+
+        }
+        if (success) {
             GLOG::println("connected");
             
             // Once connected, publish an announcement...

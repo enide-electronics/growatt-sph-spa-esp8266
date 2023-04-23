@@ -84,7 +84,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
 void setupInverter() {
     String arduinoBoard = String(ARDUINO_BOARD);
-    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" || arduinoBoard =="ESP8266_WEMOS_D1MINILITE") {
+    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" 
+    || arduinoBoard =="ESP8266_WEMOS_D1MINILITE" || arduinoBoard == "ESP8266_WEMOS_D1MINI") {
         #if !defined(D5) || !defined(D6)
         #define D5 14 //pin mapping of nodemcu and d1_mini
         #define D6 12
@@ -102,7 +103,7 @@ void setupInverter() {
 }
 
 void setupMqtt() {
-    mqtt = new MqttPublisher(espClient, wcm.getMqttTopic().c_str(), wcm.getMqttServer().c_str(), wcm.getMqttPort());
+    mqtt = new MqttPublisher(espClient, wcm.getMqttUsername().c_str(), wcm.getMqttPassword().c_str(), wcm.getMqttTopic().c_str(), wcm.getMqttServer().c_str(), wcm.getMqttPort());
     mqtt->setCallback(mqttCallback);
     mqtt->addSubscription(SETTINGS_LED_SUBTOPIC);
 }

@@ -84,7 +84,8 @@ void GLOG::print(const String &o) {
     
 void GLOG::setup() {
     String arduinoBoard = String(ARDUINO_BOARD);
-    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" || arduinoBoard =="ESP8266_WEMOS_D1MINILITE") {
+    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" 
+        || arduinoBoard =="ESP8266_WEMOS_D1MINILITE" || arduinoBoard =="ESP8266_WEMOS_D1MINI") {
         Serial.begin(115200);
         delay(10);
         GLOG::s = &Serial;

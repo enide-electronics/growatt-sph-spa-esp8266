@@ -26,6 +26,7 @@
 #include <SoftwareSerial.h>
 
 #include "WifiAndConfigManager.h"
+#include "Inverter.h"
 #include "GrowattInverter.h"
 #include "MqttPublisher.h"
 #include "InverterData.h"
@@ -38,6 +39,7 @@
  * 2: LED blinks when reading data from the inverter and publishing it to MQTT (default)
  */
 #define SETTINGS_LED_SUBTOPIC "settings/led"
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
 WiFiClient espClient;
 
@@ -47,25 +49,20 @@ unsigned long lastTeleSentAtMillis = 0;
 
 // led status (0 = off, 1 = on, 2 = blink when publishing data)
 uint8_t ledStatus = 2;
+char mqttValueBuffer16[16];
 
-GrowattInverter *inverter = NULL;
+Inverter *inverter = NULL;
 SoftwareSerial *_softSerial = NULL;
 MqttPublisher *mqtt = NULL;
 WifiAndConfigManager wcm;
 
-
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
-    GLOG::print("Message arrived [");
-    GLOG::print(topic);
-    GLOG::print("] ");
-    for (unsigned int i = 0; i < length; i++) {
-        GLOG::print((char)payload[i]);
-    }
-    GLOG::println("");
+    GLOG::logMqtt(topic, payload, length);
 
-    String sTopic(topic);
+    String subTopic(topic);
+    subTopic.replace(wcm.getMqttTopic() + "/", "");
 
-    if (sTopic == wcm.getMqttTopic() + "/" + SETTINGS_LED_SUBTOPIC) {
+    if (subTopic == SETTINGS_LED_SUBTOPIC) {
         // Switch on the LED if an 1 was received as first character
         char cLedStatus = (char)payload[0];
         if (cLedStatus == '1') {
@@ -79,6 +76,14 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
             ledStatus = 2;
         }
+    } else {
+        int safeLength = MIN(length, 15);
+        memcpy(mqttValueBuffer16, payload, safeLength);
+        mqttValueBuffer16[safeLength] = '\0';
+        
+        String sPayload = String(mqttValueBuffer16);
+        sPayload.trim();
+        inverter->setIncomingTopicData(subTopic, sPayload);
     }
 }
 
@@ -102,10 +107,17 @@ void setupInverter() {
     }
 }
 
-void setupMqtt() {
+void setupMqtt(std::list<String> inverterSettingsTopics) {
     mqtt = new MqttPublisher(espClient, wcm.getMqttUsername().c_str(), wcm.getMqttPassword().c_str(), wcm.getMqttTopic().c_str(), wcm.getMqttServer().c_str(), wcm.getMqttPort());
     mqtt->setCallback(mqttCallback);
     mqtt->addSubscription(SETTINGS_LED_SUBTOPIC);
+    GLOG::println(String("MQTT: subscribe [") + SETTINGS_LED_SUBTOPIC + "]");
+    
+    for (std::list<String>::iterator it = inverterSettingsTopics.begin(); it != inverterSettingsTopics.end(); ++it) {
+        GLOG::println(String("MQTT: subscribe [") + (*it) + "]");
+        mqtt->addSubscription((*it).c_str());
+    }
+    
 }
 
 void setupLogger() {
@@ -116,9 +128,11 @@ void setupLogger() {
 void applyNewConfiguration() {
     delay(1000);
     
+    GLOG::println("New config, no restart... deleting old objects");
+    
     // delete old objects
-    delete inverter;
     delete mqtt;
+    delete inverter;
     espClient.stop();
     
     if (_softSerial) {
@@ -126,10 +140,12 @@ void applyNewConfiguration() {
         _softSerial = NULL;
     }
     
+    GLOG::println("New config, no restart... creating new objects");
+    
     // set them up again
     setupLogger();
     setupInverter();
-    setupMqtt();
+    setupMqtt(inverter->getTopicsToSubscribe());
 }
 
 void setup() {
@@ -139,7 +155,7 @@ void setup() {
     setupLogger();
     wcm.setupWifiAndConfig();
     setupInverter();
-    setupMqtt();
+    setupMqtt(inverter->getTopicsToSubscribe());
 }
 
 void loop() {

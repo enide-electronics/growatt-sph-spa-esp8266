@@ -66,15 +66,15 @@ void MqttPublisher::keepConnected() {
         // Attempt to connect
         bool success;
         if (username.length() == 0 && password.length() == 0) {
-            GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + "...");
+            GLOG::print(String(F("Attempting MQTT connection to ")) + this->serverIp + F("..."));
             success = client->connect(clientId.c_str());
         } else {
-            GLOG::print(String("Attempting MQTT connection to ") + this->serverIp + " with username '" + username + "' and password with " + password.length() + " chars...");
+            GLOG::print(String(F("Attempting MQTT connection to ")) + this->serverIp + F(" with username '") + username + F("' and password with ") + password.length() + F(" chars..."));
             success = client->connect(clientId.c_str(), username.c_str(), password.c_str());
 
         }
         if (success) {
-            GLOG::println("connected");
+            GLOG::println(F("connected"));
             
             // Once connected, publish an announcement...
             publishTele();
@@ -84,9 +84,9 @@ void MqttPublisher::keepConnected() {
                 client->subscribe(s.c_str());
             }
         } else {
-            GLOG::print("failed, rc=");
+            GLOG::print(F("failed, rc="));
             GLOG::print(client->state());
-            GLOG::println(" retry in 5 seconds");
+            GLOG::println(F(" retry in 5 seconds"));
         }
     }
 }

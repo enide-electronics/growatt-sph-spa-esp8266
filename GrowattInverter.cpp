@@ -9,14 +9,10 @@
 */
 #include "GrowattInverter.h"
 #include "GLog.h"
+#include "GrowattTaskFactory.h"
+#include "Task.h"
+#include "ModbusUtils.h"
 
-void GrowattInverter::dumpRegisters(uint8_t length) {
-    GLOG::print(", hex[");
-    for (uint8_t i = 0; i < length; i++) {
-        GLOG::print(String(this->node->getResponseBuffer(i), HEX) + ":");
-    }
-    GLOG::print("]");
-}
 
 static uint8_t stateSequence[] = {0, 1, 3, 0, 1, 4, 0, 1, 3, 0, 1, 4, 2};
 void GrowattInverter::incrementStateIdx() {
@@ -39,8 +35,22 @@ float GrowattInverter::glueFloat(uint16_t w1, uint16_t w0) {
 }
 
 void GrowattInverter::read() {
+
+    // run tasks, if any
+    if (incomingTasks.size() > 0) {
+        runningTask = incomingTasks.front();
+        incomingTasks.pop_front();
+        
+        GLOG::println("\nTask starting...");
+        
+        runningTask->run();
+        this->valid = true; // it's always true even if the task fails be cause we will always return a Ok/Fail message on the "task_topic"/result
+            
+        return;
+    }
     
-    GLOG::print(String(", state=") + stateSequence[currentStateIdx]);
+    // read data
+    GLOG::print(String(", step=") + stateSequence[currentStateIdx]);
 
     if (stateSequence[currentStateIdx] == 0) {
         uint8_t result1 = this->node->readInputRegisters(0, 12);
@@ -114,7 +124,7 @@ void GrowattInverter::read() {
         // start reading at register 1009 and read up to 6 registers
         uint8_t result4 = this->node->readInputRegisters(1009, 6);
         if (result4 == this->node->ku8MBSuccess) {
-            dumpRegisters(6);
+            ModbusUtils::dumpRegisters(this->node, 6);
             this->Pdischarge = this->glueFloat(this->node->getResponseBuffer(0), this->node->getResponseBuffer(1)); //1009, 1010
             this->Pcharge = this->glueFloat(this->node->getResponseBuffer(2), this->node->getResponseBuffer(3)); //1011, 1012
             this->Vbat = this->glueFloat(0, this->node->getResponseBuffer(4)); //1013
@@ -239,6 +249,25 @@ bool GrowattInverter::isDataValid() {
 InverterData GrowattInverter::getData(bool fullSet) {
     InverterData data;
     
+    // handle task data
+    if (runningTask != NULL) {
+        // return task data
+        if (runningTask->isSuccessful()) {
+            InverterData respData = runningTask->response();
+            data.insert(respData.begin(), respData.end());
+        }
+        // append task result
+        data.set((runningTask->subtopic()+"/result").c_str(), runningTask->isSuccessful() ? "Ok" : "Fail");
+        
+        delete runningTask;
+        runningTask = NULL;
+        
+        this->valid = false;
+        
+        return data;
+    }
+    
+    // handle read data
     if (lastUpdatedState == 0 || fullSet) {
         data.set("status", this->status);
       
@@ -335,4 +364,28 @@ InverterData GrowattInverter::getData(bool fullSet) {
     }
     
     return data;
+}
+
+
+
+void GrowattInverter::setIncomingTopicData(const String &topic, const String &value)
+{
+    if (incomingTasks.size() > 3) {
+        GLOG::print("Tasks queue full: task rejected");
+        return;
+    }
+    
+    Task* task = GrowattTaskFactory::create(this->node, topic, value);
+    if (task != NULL) {
+        incomingTasks.push_back(task);
+        GLOG::print("Accepted task topic=[" + topic + "], value=[" + value + "]");
+    } else {
+        GLOG::print("Unknown task topic=[" + topic + "], value=[" + value + "]");
+    }
+    
+}
+
+std::list<String> GrowattInverter::getTopicsToSubscribe()
+{
+   return GrowattTaskFactory::registeredSubtopics();
 }

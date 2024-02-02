@@ -51,7 +51,10 @@ void MqttPublisher::setCallback(void (*callback)(char* topic, byte* payload, uns
 }
 
 void MqttPublisher::addSubscription(const char *subtopic) {
-    subscriptions.push_back(this->topic + "/" + subtopic);
+    String fullTopic = this->topic + "/" + subtopic;
+    
+    GLOG::println(String(F("MQTT: subscribe [")) + fullTopic + "]");
+    subscriptions.push_back(fullTopic);
 }
 
 void MqttPublisher::keepConnected() {
@@ -66,10 +69,10 @@ void MqttPublisher::keepConnected() {
         // Attempt to connect
         bool success;
         if (username.length() == 0 && password.length() == 0) {
-            GLOG::print(String(F("Attempting MQTT connection to ")) + this->serverIp + F("..."));
+            GLOG::print(String(F("MQTT: attempting connection to ")) + this->serverIp + F("..."));
             success = client->connect(clientId.c_str());
         } else {
-            GLOG::print(String(F("Attempting MQTT connection to ")) + this->serverIp + F(" with username '") + username + F("' and password with ") + password.length() + F(" chars..."));
+            GLOG::print(String(F("MQTT: attempting connection to ")) + this->serverIp + F(" with username '") + username + F("' and password with ") + password.length() + F(" chars..."));
             success = client->connect(clientId.c_str(), username.c_str(), password.c_str());
 
         }

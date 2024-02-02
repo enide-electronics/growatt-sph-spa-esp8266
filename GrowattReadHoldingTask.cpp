@@ -37,6 +37,10 @@ String GrowattReadHoldingTask::subtopic() {
 }
 
 bool GrowattReadHoldingTask::run() {
+    
+    GLOG::print(F("GrowattReadHoldingTask::run "));
+    GLOG::println((subtopic() + " addr=" + this->addr + " len=" + this->length).c_str());
+    
     setSuccessful(false);
     
     // invalid arguments

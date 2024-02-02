@@ -6,12 +6,8 @@
   Licensed under GNU GPLv3
 */
 #include "Task.h"
+#include "GrowattPriorityTaskCommon.h"
 #include "ModbusMaster.h"
-
-#define TOPIC_SETTINGS_PRIORITY "settings/priority"
-#define TOPIC_VALUE_PRIORITY_LOAD "load"
-#define TOPIC_VALUE_PRIORITY_BAT "bat"
-#define TOPIC_VALUE_PRIORITY_GRID "grid"
 
 class GrowattPriorityTask : public Task {
     /*
@@ -21,10 +17,11 @@ class GrowattPriorityTask : public Task {
      */
     private:
         ModbusMaster * node;
-        uint16_t priority;
+        String mqttValue;
+        bool checkAndSetEnableBit(uint16_t startAddr, uint8_t bitValue);
         
     public:
-        GrowattPriorityTask(ModbusMaster * node, uint16 priority);
+        GrowattPriorityTask(ModbusMaster * node, const String &mqttValue);
         virtual ~GrowattPriorityTask();
 
         virtual String subtopic();

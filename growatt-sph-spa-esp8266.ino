@@ -25,6 +25,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
+#include "GlobalDefs.h"
 #include "WifiAndConfigManager.h"
 #include "Inverter.h"
 #include "GrowattInverter.h"
@@ -41,6 +42,29 @@
 #define SETTINGS_LED_SUBTOPIC "settings/led"
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
+// to allow the code to compile when using a simple ESP-01
+// #if !defined(D5) || !defined(D6)
+    // #define D5 14 //pin mapping of nodemcu and d1_mini
+    // #define D6 12
+    
+    // #define D7 13 
+    // #define D8 15
+// #endif
+
+#ifdef LARGE_ESP_BOARD
+#define LED_RED   D7
+#define LED_GREEN D8
+    // on larger ESP boards they do change the extra LEDs
+    #define SET_R_LED(HL) digitalWrite(LED_RED, HL);
+    #define SET_G_LED(HL) digitalWrite(LED_GREEN, HL);
+#else
+    // on ESP-01 they do nothing
+    #define SET_R_LED(HL)
+    #define SET_G_LED(HL)
+#endif
+
+
+
 WiFiClient espClient;
 
 // tasks last run at millis
@@ -50,6 +74,7 @@ unsigned long lastTeleSentAtMillis = 0;
 // led status (0 = off, 1 = on, 2 = blink when publishing data)
 uint8_t ledStatus = 2;
 char mqttValueBuffer16[16];
+uint8_t tasksRedLedCounter = 0;
 
 Inverter *inverter = NULL;
 SoftwareSerial *_softSerial = NULL;
@@ -67,8 +92,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         char cLedStatus = (char)payload[0];
         if (cLedStatus == '1') {
             digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
-            ledStatus = 1;                    // but actually the LED is on; this is because
-                                        // it is active low on the ESP-01)
+            ledStatus = 1;                    // but actually the LED is on; this is because it is active low on the ESP-01)
         } else if (cLedStatus == '0') {
             digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
             ledStatus = 0;
@@ -77,6 +101,9 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             ledStatus = 2;
         }
     } else {
+        SET_R_LED(HIGH); // Turn red led ON
+        tasksRedLedCounter++;
+        
         int safeLength = MIN(length, 15);
         memcpy(mqttValueBuffer16, payload, safeLength);
         mqttValueBuffer16[safeLength] = '\0';
@@ -88,33 +115,24 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 }
 
 void setupInverter() {
-    String arduinoBoard = String(ARDUINO_BOARD);
-    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" 
-    || arduinoBoard =="ESP8266_WEMOS_D1MINILITE" || arduinoBoard == "ESP8266_WEMOS_D1MINI") {
-        #if !defined(D5) || !defined(D6)
-        #define D5 14 //pin mapping of nodemcu and d1_mini
-        #define D6 12
-        #endif
-        
-        #define PIN_RX D6
-        #define PIN_TX D5
-        _softSerial = new SoftwareSerial(PIN_RX, PIN_TX);
-        _softSerial->begin(9600);
-        inverter = new GrowattInverter((Stream &) (*_softSerial), wcm.getModbusAddress());
-    } else {
-        Serial.begin(9600);
-        inverter = new GrowattInverter((Stream &) Serial, wcm.getModbusAddress());
-    }
+#ifdef LARGE_ESP_BOARD
+    #define PIN_RX D6
+    #define PIN_TX D5
+    _softSerial = new SoftwareSerial(PIN_RX, PIN_TX);
+    _softSerial->begin(9600);
+    inverter = new GrowattInverter((Stream &) (*_softSerial), wcm.getModbusAddress());
+#else
+    Serial.begin(9600);
+    inverter = new GrowattInverter((Stream &) Serial, wcm.getModbusAddress());
+#endif
 }
 
 void setupMqtt(std::list<String> inverterSettingsTopics) {
     mqtt = new MqttPublisher(espClient, wcm.getMqttUsername().c_str(), wcm.getMqttPassword().c_str(), wcm.getMqttTopic().c_str(), wcm.getMqttServer().c_str(), wcm.getMqttPort());
     mqtt->setCallback(mqttCallback);
     mqtt->addSubscription(SETTINGS_LED_SUBTOPIC);
-    GLOG::println(String("MQTT: subscribe [") + SETTINGS_LED_SUBTOPIC + "]");
     
     for (std::list<String>::iterator it = inverterSettingsTopics.begin(); it != inverterSettingsTopics.end(); ++it) {
-        GLOG::println(String("MQTT: subscribe [") + (*it) + "]");
         mqtt->addSubscription((*it).c_str());
     }
     
@@ -128,7 +146,7 @@ void setupLogger() {
 void applyNewConfiguration() {
     delay(1000);
     
-    GLOG::println("New config, no restart... deleting old objects");
+    GLOG::println(F("LOOP: New config, no restart... deleting old objects"));
     
     // delete old objects
     delete mqtt;
@@ -140,7 +158,7 @@ void applyNewConfiguration() {
         _softSerial = NULL;
     }
     
-    GLOG::println("New config, no restart... creating new objects");
+    GLOG::println(F("LOOP: New config, no restart... creating new objects"));
     
     // set them up again
     setupLogger();
@@ -151,6 +169,11 @@ void applyNewConfiguration() {
 void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+
+#ifdef LARGE_ESP_BOARD
+    pinMode(LED_RED, OUTPUT);         // Initialize other LED pins on larger boards
+    pinMode(LED_GREEN, OUTPUT);
+#endif
 
     setupLogger();
     wcm.setupWifiAndConfig();
@@ -164,6 +187,7 @@ void loop() {
     // handle config changes
     if (wcm.checkforConfigChanges()) {
         if (wcm.isRestartRequired()) {
+            GLOG::println(F("LOOP: New config, RESTARTING!"));
             delay(1000);
             ESP.restart();
         } else {
@@ -178,25 +202,28 @@ void loop() {
     // inverter report
     if (mqtt->isConnected() && now - lastReportSentAtMillis > wcm.getModbusPollingInSeconds() * 1000) {
         if (ledStatus == 2) digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on
-        GLOG::print("Polling inverter");
+        GLOG::print(F("LOOP: Polling inverter"));
         inverter->read();
 
         if (inverter->isDataValid()) {
-            GLOG::print(", publishing");
+            GLOG::print(F(", publishing"));
             InverterData data = inverter->getData();
             mqtt->publishData(data);
-            GLOG::println(", done!");
+            GLOG::println(F(", done!"));
         } else {
-            GLOG::println(", failed!");
+            GLOG::println(F(", failed!"));
         }
 
         lastReportSentAtMillis = now;
+        
         if (ledStatus == 2) digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
+        if (tasksRedLedCounter > 0) tasksRedLedCounter--;
+        if (tasksRedLedCounter == 0) SET_R_LED(LOW);    // Turn red led off when there are no more tasks
     }
 
     // inverter tele report
     if (now - lastTeleSentAtMillis > 60000) {
-        GLOG::println("Publishing telemetry");
+        GLOG::println(F("LOOP: Publishing telemetry"));
         mqtt->publishTele();
 
         lastTeleSentAtMillis = now;

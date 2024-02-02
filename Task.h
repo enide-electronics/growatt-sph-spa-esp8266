@@ -10,6 +10,7 @@
 
 #include <Arduino.h>
 #include "InverterData.h"
+#include "GLog.h"
 
 class Task {
     private:

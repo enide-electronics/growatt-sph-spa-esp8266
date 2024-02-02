@@ -41,10 +41,12 @@ void GrowattInverter::read() {
         runningTask = incomingTasks.front();
         incomingTasks.pop_front();
         
-        GLOG::println("\nTask starting...");
+        GLOG::print(", TASK starting");
         
         runningTask->run();
         this->valid = true; // it's always true even if the task fails be cause we will always return a Ok/Fail message on the "task_topic"/result
+        
+        GLOG::print(", completed");
             
         return;
     }
@@ -110,6 +112,8 @@ void GrowattInverter::read() {
             this->temp1 = this->glueFloat(0, this->node->getResponseBuffer(0)); //93
             this->temp2 = this->glueFloat(0, this->node->getResponseBuffer(1)); //94
             this->temp3 = this->glueFloat(0, this->node->getResponseBuffer(2)); //95
+            
+            this->deratingMode = this->node->getResponseBuffer(11); //104
 
             this->Priority = this->node->getResponseBuffer(25); //118
             this->BatteryType = this->node->getResponseBuffer(26); //119
@@ -124,7 +128,7 @@ void GrowattInverter::read() {
         // start reading at register 1009 and read up to 6 registers
         uint8_t result4 = this->node->readInputRegisters(1009, 6);
         if (result4 == this->node->ku8MBSuccess) {
-            ModbusUtils::dumpRegisters(this->node, 6);
+            // ModbusUtils::dumpRegisters(this->node, 6);
             this->Pdischarge = this->glueFloat(this->node->getResponseBuffer(0), this->node->getResponseBuffer(1)); //1009, 1010
             this->Pcharge = this->glueFloat(this->node->getResponseBuffer(2), this->node->getResponseBuffer(3)); //1011, 1012
             this->Vbat = this->glueFloat(0, this->node->getResponseBuffer(4)); //1013
@@ -212,6 +216,7 @@ GrowattInverter::GrowattInverter(Stream &serial, uint8_t slaveAddress) {
     this->temp2 = 0.0;
     this->temp3 = 0.0;
 
+    this->deratingMode = 0;
     this->Priority = 0;
     this->BatteryType = 0;
 
@@ -306,16 +311,53 @@ InverterData GrowattInverter::getData(bool fullSet) {
         data.set("Temp1", this->temp1);
         data.set("Temp2", this->temp2);
         data.set("Temp3", this->temp3);
+        
+        data.set("DeratingMode", this->deratingMode);
+        
+        switch(this->deratingMode) {
+            case 0:
+                data.set("Derating", "None");
+            break;
+            case 1:
+                data.set("Derating", "PV");
+            break;
+            case 2:
+                data.set("Derating", "*");
+            break;
+            case 3:
+                data.set("Derating", "Vac");
+            break;
+            case 4:
+                data.set("Derating", "Fac");
+            break;
+            case 5:
+                data.set("Derating", "Tboost");
+            break;
+            case 6:
+                data.set("Derating", "Tinv");
+            break;
+            case 7:
+                data.set("Derating", "Control");
+            break;
+            case 8:
+                data.set("Derating", "*");
+            break;
+            case 9:
+                data.set("Derating", "OverBackByTime");
+            break;
+            default:
+                data.set("Derating", "Unknown");
+        }
       
         switch (this->Priority) {
             case 0:
-                data.set("Priority", "Load First");
+                data.set("Priority", "Load");
             break;
             case 1:
-                data.set("Priority", "Bat First");
+                data.set("Priority", "Bat");
             break;
             case 2:
-                data.set("Priority", "Grid First");
+                data.set("Priority", "Grid");
             break;
             default:
                 data.set("Priority", (String("Unknown ") + this->Priority).c_str());
@@ -371,16 +413,16 @@ InverterData GrowattInverter::getData(bool fullSet) {
 void GrowattInverter::setIncomingTopicData(const String &topic, const String &value)
 {
     if (incomingTasks.size() > 3) {
-        GLOG::print("Tasks queue full: task rejected");
+        GLOG::println(F("INVERTER: tasks queue full: task rejected"));
         return;
     }
     
     Task* task = GrowattTaskFactory::create(this->node, topic, value);
     if (task != NULL) {
         incomingTasks.push_back(task);
-        GLOG::print("Accepted task topic=[" + topic + "], value=[" + value + "]");
+        GLOG::println(String(F("INVERTER: accepted task topic=[")) + topic + F("], value=[") + value + F("]"));
     } else {
-        GLOG::print("Unknown task topic=[" + topic + "], value=[" + value + "]");
+        GLOG::println(String(F("INVERTER: unknown task topic=[")) + topic + F("], value=[") + value + F("]"));
     }
     
 }

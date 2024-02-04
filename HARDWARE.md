@@ -40,8 +40,8 @@ The adapter board without the Wemos D1 mini:
 <img src='images/wemos-03.jpg' width='640px'>
 
 Unfortunately, when designing this PCB I used a voltage regulator that is not easy to source. I'm in the process of changing it and will update this page with the Gerber files.
-<img src='images/wemos-schematic.jpg' width='800px'>
-<img src='images/wemos-pcb.jpg' width='437px'>
+<img src='images/wemos-a-schematic.jpg' width='800px'>
+<img src='images/wemos-a-pcb.jpg' width='437px'>
 
 ## You're own solution
 If you already have a ESP8266 board that can connect to a RS232 serial port, you should be able to use it as well.

@@ -31,6 +31,7 @@ See [BUILD.md](BUILD.md) for more details, if you really want to compile it on y
 
 ## Configuration
 Everything is *configured via WiFiManager's Captive Portal / Web Portal* and stored in the SPIFFS file system, in a JSON file.
+
 So when powering up the board for the first time, after uploading the firmware, you'll be presented with a WiFi network named `growatt-sph-spa-esp8266` from where you can select to which network the board should connect to and the remaining settings.
 ### The main screen
 <img src='images/ss01-main.png' width='320px'>

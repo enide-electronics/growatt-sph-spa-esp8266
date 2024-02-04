@@ -4,8 +4,8 @@ The only thing needed, besides the ESP8266 board, is a MAX3232 or similar 3.3V R
 
 ## ESP-01 / WiFi232 modem clone
 I started this project using a clone of the [WiFi232 Modem](http://biosrhythm.com/?page_id=1453), with a custom 9 to 25 pin adapter, just to pass the TX, RX, GND and pin 9 (VCC from the inverter) to the WiFi232 modem.
--<img src='images/img02-esp01.jpg' width='640px'>
--<img src='images/img03-esp01-close-up.jpg' width='640px'>
+<img src='images/img02-esp01.jpg' width='640px'>
+<img src='images/img03-esp01-close-up.jpg' width='640px'>
 
 This drawing shows the connections to the ESP-01 board I used as a guide:
 ```
@@ -28,6 +28,7 @@ credit: https://github.com/jkairys/growatt-esp8266
 
 ## Wemos D1 mini and similar
 Recently I decided to develop an adapter PCB, with all the components mentioned above and use a [Wemos D1 Mini](https://www.wemos.cc/en/latest/d1/d1_mini.html) board talk to the inverter via RS232 interface.
+
 The Wemos D1 mini has a lot more pins and thus the serial communication to the inverter is handled by SoftwareSerial on pins D5 and D6, thus freeing the USB interface (native serial port) to see log messages and debug information.
 
 This new adapter board also includes 2 LEDs and one push button to use in the future.
@@ -35,13 +36,14 @@ Here's how it looks like:
 <img src='images/wemos-01.jpg' width='640px'>
 
 The adapter board without the Wemos D1 mini:
-<img src='images/wemos-02.png' width='640px'>
-<img src='images/wemos-03.png' width='640px'>
+<img src='images/wemos-02.jpg' width='640px'>
+<img src='images/wemos-03.jpg' width='640px'>
 
 Unfortunately, when designing this PCB I used a voltage regulator that is not easy to source. I'm in the process of changing it and will update this page with the Gerber files.
-<img src='images/wemos-schematic.png' width='800px'>
-<img src='images/wemos-pcb.png' width='437px'>
+<img src='images/wemos-schematic.jpg' width='800px'>
+<img src='images/wemos-pcb.jpg' width='437px'>
 
 ## You're own solution
 If you already have a ESP8266 board that can connect to a RS232 serial port, you should be able to use it as well.
+
 Just make sure you're using pins D5 and D6 to talk to the inverter or alternatively, change those pins in the main file and recompile the project.

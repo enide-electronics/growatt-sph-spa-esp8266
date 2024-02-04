@@ -56,7 +56,6 @@ Energy data is polled periodically from the inverter Input Registers, every N se
 | `growatt/EpsPac3`           | W     | float  | EPS Phase 3 total power (disabled by default, for TL inverters only)  |
 | `growatt/EpsLoadPercent`    | %     | float  | EPS Load in percentage 100% at 3kW                                    |
 | `growatt/EpsPF`             | -     | float  | EPS power factor                                                      |
-|-----------------------------|-------|--------|-----------------------------------------------------------------------|
 
 
 
@@ -77,13 +76,16 @@ These can be modified by publishing messages with the correct values to the foll
 | `growatt/settings/priority/grid/pr`   | `1` ... `100`                                    | Discharge Power Rating                   | Grid First discharge power rating                                   |
 | `growatt/settings/priority/grid/ssoc` | `13` ... `100`                                   | Stop State Of Charge                     | Grid First SSOC                                                     |
 | `growatt/settings/priority/grid/t1`   | `00:00 23:59`                                    | Grid First Time                          | Grid First Time Interval 1 that can be set from the panel           |
-|---------------------------------------|--------------------------------------------------|------------------------------------------|---------------------------------------------------------------------|
+
 
 ## Settings currently not enabled in the code
 
 :warning:  These topics **are supported** by the code but are disabled in the released binaries for safety.
+
 :warning:  You can recompile the code to enable them if you want.
+
 :warning:  Remember, if you set any of these values, they will not be visible on the inverter screen nor they can be modified through the panel.
+
 :warning:  You will only be able to change them or disable them via their MQTT topics.
 
 | Topic                               | Value         | Parameter            | Observations                  | 
@@ -93,7 +95,6 @@ These can be modified by publishing messages with the correct values to the foll
 |-------------------------------------|---------------|----------------------|-------------------------------|
 | `growatt/settings/priority/grid/t2` | `00:00 23:59` | Grid First Time 2    | Grid First Time Interval 2    |
 | `growatt/settings/priority/grid/t3` | `00:00 23:59` | Grid First Time 3    | Grid First Time Interval 3    |
-|-------------------------------------|---------------|----------------------|-------------------------------|
 
 
 ## Modbus and inverter registers

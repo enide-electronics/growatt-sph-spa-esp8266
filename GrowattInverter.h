@@ -13,30 +13,33 @@
 
 #include <Arduino.h>
 #include <stdint.h>
+#include <list>
 #include <functional>
 #include <ModbusMaster.h>
+#include "Task.h"
 
-#include "InverterData.h"
+#include "Inverter.h"
 
 // Uncomment the following line to enable reporting of all 3 phase AC data
 //#define TL_INVERTER
 
-class GrowattInverter
+class GrowattInverter : public Inverter
 {
     public:
         GrowattInverter(Stream &serial, uint8_t slaveAddress);
-        ~GrowattInverter();
-        void read();
-        bool isDataValid();
+        virtual ~GrowattInverter();
+        virtual void read();
+        virtual bool isDataValid();
     
-        InverterData getData(bool fullSet = false);
+        virtual InverterData getData(bool fullSet = false);
+        virtual void setIncomingTopicData(const String &topic, const String &value);
+        virtual std::list<String> getTopicsToSubscribe();
 
     private:
         float glueFloat(uint16_t w1, uint16_t w2);
-        void dumpRegisters(uint8_t length);
         void incrementStateIdx();
         
-        ModbusMaster * node;
+        ModbusMaster *node;
         uint8_t currentStateIdx;
         uint8_t lastUpdatedState;
 
@@ -71,6 +74,7 @@ class GrowattInverter
         float temp2;
         float temp3;
         
+        uint8_t deratingMode;
         uint8_t Priority;
         uint8_t BatteryType;
         
@@ -100,6 +104,11 @@ class GrowattInverter
         bool valid;
 
         uint8_t status;
+        
+        // the active task, if any or NULL
+        Task *runningTask;
+        // list of incoming tasks (usually from mqtt) to be executed by the inverter... like changing the priority, etc.
+        std::list<Task*> incomingTasks;
 
 };
 

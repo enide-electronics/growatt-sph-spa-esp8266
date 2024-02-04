@@ -25,6 +25,7 @@ class GLOG {
         static void print(const Printable &o);
         static void println(const String &o);
         static void print(const String &o);
+        static void logMqtt(char* topic, byte* payload, unsigned int length);
         
         static void setup();
         static bool isLogEnabled();

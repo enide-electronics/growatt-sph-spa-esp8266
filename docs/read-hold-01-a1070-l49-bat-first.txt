@@ -1,0 +1,55 @@
+# battery first
+
+# @1070
+64: GF dischage power rate 100%
+05: GF stop SOC 5% ????
+00:00:00:00:00:00:00:00: //1072..1079 all zeros
+
+# @1080 (grid first)
+00: GF1 Start time
+00: GF1 Stop time
+00: GF1 enable
+00: GF2 start time
+00: GF2 stop time
+00: GF2 enable
+00: GF3
+00: GF3
+00: GF3
+00: // 1089 zero
+
+# @1090 (bat first)
+28: power rate 40%
+2b: stop soc 43%
+01: ac charger enabled
+
+00:00:00:00:00:00:00: 1093..1099 all zeros
+
+00:   BAT1 start time HM
+173b: BAT1 stop time 23:59
+01: BAT1 enabled
+00:
+00:
+00: BAT2 enabled
+00:
+00:
+00: BAT3 enabled
+00: // 1109 zero
+
+# @1110
+00: LF1
+00: LF1
+00: LF1 enabled
+00: LF2
+00: LF2
+00: LF2 enabled
+00: LF3
+00: LF3
+00 LF3 enabled
+
+
+Bat First                                                                                         vv
+64:05:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:28:2b:01:00:00:00:00:00:00:00:00:173b:01:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+LoadFirst
+64:05:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:28:2b:01:00:00:00:00:00:00:00:00:173b:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+                                                                                                  ^^
+                                                            28:2b:01:00:00:00:00:00:00:00:00:173b:01:00:00:00:00:00:00:00

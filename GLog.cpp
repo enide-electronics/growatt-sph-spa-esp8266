@@ -7,6 +7,7 @@
 */
 
 #include "GLog.h"
+#include "GlobalDefs.h"
 
 Stream *GLOG::s = NULL;
 
@@ -81,17 +82,27 @@ void GLOG::print(const String &o) {
         GLOG::s->print(o);
     }
 }
+
+void GLOG::logMqtt(char* topic, byte* payload, unsigned int length) {
+    if (GLOG::s) {
+        GLOG::s->print(F("MQTT: received ["));
+        GLOG::s->print(topic);
+        GLOG::s->print(F("]=["));
+        for (unsigned int i = 0; i < length; i++) {
+            GLOG::s->print((char)payload[i]);
+        }
+        GLOG::s->println(F("]"));
+    }
+}
     
 void GLOG::setup() {
-    String arduinoBoard = String(ARDUINO_BOARD);
-    if (arduinoBoard == "ESP8266_NODEMCU" || arduinoBoard == "ESP8266_WEMOS_D1MINIPRO" 
-        || arduinoBoard =="ESP8266_WEMOS_D1MINILITE" || arduinoBoard =="ESP8266_WEMOS_D1MINI") {
-        Serial.begin(115200);
-        delay(10);
-        GLOG::s = &Serial;
-    } else {
-        GLOG::s = NULL;
-    }
+#ifdef LARGE_ESP_BOARD
+    Serial.begin(115200);
+    delay(10);
+    GLOG::s = &Serial;
+#else
+    GLOG::s = NULL;
+#endif
 }
 
 bool GLOG::isLogEnabled() {

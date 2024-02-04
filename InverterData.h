@@ -12,7 +12,7 @@
 #include <Arduino.h>
 #include <map>
 
-#define MSG_BUFFER_SIZE  (50)
+#define MSG_BUFFER_SIZE  (255)
 
 class InverterData : public std::map<String, String> {   
     private:
@@ -20,6 +20,7 @@ class InverterData : public std::map<String, String> {
         
     public:
         InverterData();
+        virtual ~InverterData();
         
         void set(const char *name, float value);
 

@@ -12,6 +12,10 @@ InverterData::InverterData() {
     clear();
 }
 
+InverterData::~InverterData() {
+    clear();
+}
+
 void InverterData::set(const char *name, float value) {
     snprintf (msg, MSG_BUFFER_SIZE, "%.1f", value);
     (*this)[String(name)] = String(msg);

@@ -56,12 +56,12 @@ void WifiAndConfigManager::saveConfigCallback() {
 }
 
 void WifiAndConfigManager::handleEraseAll() {
-    GLOG::println("DELETE SPIFFS CONFIG");
-    if (SPIFFS.exists("/config.json")) {
-        SPIFFS.remove("/config.json");
+    GLOG::println(F("DELETE SPIFFS CONFIG"));
+    if (SPIFFS.exists(F("/config.json"))) {
+        SPIFFS.remove(F("/config.json"));
     }
 
-    GLOG::println("DELETE WIFI CONFIG");
+    GLOG::println(F("DELETE WIFI CONFIG"));
     ESP.eraseConfig();
     
     wm.server->send(200, F("text/plain"), F("Done! Rebooting now, please wait a few seconds."));
@@ -126,8 +126,8 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     }
 
     GLOG::println("");
-    GLOG::println("WiFi connected");
-    GLOG::print("IP address: ");
+    GLOG::println(F("WiFi connected"));
+    GLOG::print(F("IP address: "));
     GLOG::println(WiFi.localIP());
 
     randomSeed(micros());
@@ -143,16 +143,16 @@ void WifiAndConfigManager::setupWifiAndConfig() {
 
 void WifiAndConfigManager::load() {
     //read configuration from FS json
-    GLOG::println("Mounting FS...");
+    GLOG::println(F("Mounting FS..."));
 
     if (SPIFFS.begin()) {
         GLOG::println("Mounted file system");
-        if (SPIFFS.exists("/config.json")) {
+        if (SPIFFS.exists(F("/config.json"))) {
             //file exists, reading and loading
-            GLOG::println("Reading config file");
-            File configFile = SPIFFS.open("/config.json", "r");
+            GLOG::println(F("Reading config file"));
+            File configFile = SPIFFS.open(F("/config.json"), "r");
             if (configFile) {
-                GLOG::println("Opened config file");
+                GLOG::println(F("Opened config file"));
                 size_t size = configFile.size();
                 // Allocate a buffer to store contents of the file.
                 std::unique_ptr<char[]> buf(new char[size]);
@@ -170,7 +170,7 @@ void WifiAndConfigManager::load() {
                 
                 if (json.success()) {
 #endif
-                    GLOG::println("\nparsed json");
+                    GLOG::println(F("\nparsed json"));
 
                     if (json.containsKey(DEVICE_NAME_K)) {
                         deviceName = json[DEVICE_NAME_K].as<String>();
@@ -226,13 +226,13 @@ void WifiAndConfigManager::load() {
                         modbusPollingInSeconds = 5;
                     }
                 } else {
-                    GLOG::println("Failed to load json config");
+                    GLOG::println(F("Failed to load json config"));
                 }
                 configFile.close();
             }
         }
     } else {
-        GLOG::println("Failed to mount FS");
+        GLOG::println(("Failed to mount FS"));
     }
     //end read
 
@@ -241,7 +241,7 @@ void WifiAndConfigManager::load() {
 void WifiAndConfigManager::save() {
     //save the custom parameters to FS
 
-    GLOG::println("Saving config");
+    GLOG::println(F("Saving config"));
 
 #if ARDUINOJSON_VERSION_MAJOR >= 6
     DynamicJsonDocument json(1024);
@@ -262,9 +262,9 @@ void WifiAndConfigManager::save() {
     json[MODBUS_ADDR_K] = modbusAddress;
     json[MODBUS_POLLING_K] = modbusPollingInSeconds;
 
-    File configFile = SPIFFS.open("/config.json", "w");
+    File configFile = SPIFFS.open(F("/config.json"), "w");
     if (!configFile) {
-        GLOG::println("Failed to open config file for writing");
+        GLOG::println(F("Failed to open config file for writing"));
     }
 
 #if ARDUINOJSON_VERSION_MAJOR >= 6
@@ -302,32 +302,32 @@ String WifiAndConfigManager::getParam(String name){
 }
 
 void WifiAndConfigManager::show() {
-    GLOG::println("---------------------------");
-    GLOG::print("Device name   : ");
+    GLOG::println(F("---------------------------"));
+    GLOG::print(F("Device name   : "));
     GLOG::println(deviceName);
     
-    GLOG::print("SoftAP pass   : ");
+    GLOG::print(F("SoftAP pass   : "));
     GLOG::println(softApPassword);
     
-    GLOG::print("Mqtt server   : ");
+    GLOG::print(F("Mqtt server   : "));
     GLOG::println(mqttServer);
  
-    GLOG::print("Mqtt port     : ");
+    GLOG::print(F("Mqtt port     : "));
     GLOG::println(mqttPort);
     
-    GLOG::print("Mqtt Username : ");
+    GLOG::print(F("Mqtt Username : "));
     GLOG::println(mqttUsername);
     
-    GLOG::print("Mqtt Password : ");
+    GLOG::print(F("Mqtt Password : "));
     GLOG::println(mqttPassword);
     
-    GLOG::print("Mqtt Topic    : ");
+    GLOG::print(F("Mqtt Topic    : "));
     GLOG::println(mqttBaseTopic);
     
-    GLOG::print("Modbus Address: ");
+    GLOG::print(F("Modbus Address: "));
     GLOG::println(modbusAddress);
     
-    GLOG::print("Modbus Poll(s): ");
+    GLOG::print(F("Modbus Poll(s): "));
     GLOG::println(modbusPollingInSeconds);
 }
 
@@ -372,7 +372,7 @@ bool WifiAndConfigManager::checkforConfigChanges() {
         
         String newDeviceName = String(deviceNameParam->getValue());
         if (newDeviceName != deviceName) {
-            GLOG::println(String("New device name : ") + newDeviceName);
+            GLOG::println(String(F("New device name : ")) + newDeviceName);
             rebootRequired = true;
         }
         

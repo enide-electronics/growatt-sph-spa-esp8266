@@ -4,6 +4,7 @@ The only thing needed, besides the ESP8266 board, is a MAX3232 or similar 3.3V R
 
 ## ESP-01 / WiFi232 modem clone
 I started this project using a clone of the [WiFi232 Modem](http://biosrhythm.com/?page_id=1453), with a custom 9 to 25 pin adapter, just to pass the TX, RX, GND and pin 9 (VCC from the inverter) to the WiFi232 modem.
+
 <img src='images/img02-esp01.jpg' width='640px'>
 <img src='images/img03-esp01-close-up.jpg' width='640px'>
 
@@ -29,21 +30,32 @@ credit: https://github.com/jkairys/growatt-esp8266
 ## Wemos D1 mini and similar
 Recently I decided to develop an adapter PCB, with all the components mentioned above and use a [Wemos D1 Mini](https://www.wemos.cc/en/latest/d1/d1_mini.html) board talk to the inverter via RS232 interface.
 
-The Wemos D1 mini has a lot more pins and thus the serial communication to the inverter is handled by SoftwareSerial on pins D5 and D6, thus freeing the USB interface (native serial port) to see log messages and debug information.
+The Wemos D1 mini has a lot more pins and thus the serial communication to the inverter is handled by SoftwareSerial on pins D5 and D6, freeing the USB interface (native serial port) for sending log messages and debug information.
 
 This new adapter board also includes 2 LEDs and one push button to use in the future.
-Here's how it looks like:
+
+Here's how the prototype looks like:
+
 <img src='images/wemos-01.jpg' width='640px'>
 
-The adapter board without the Wemos D1 mini:
-<img src='images/wemos-02.jpg' width='640px'>
-<img src='images/wemos-03.jpg' width='640px'>
+And how it looks without the Wemos D1 mini inserted:
 
-Unfortunately, when designing this PCB I used a voltage regulator that is not easy to source. I'm in the process of changing it and will update this page with the Gerber files.
-<img src='images/wemos-a-schematic.jpg' width='800px'>
-<img src='images/wemos-a-pcb.jpg' width='437px'>
+<img src='images/wemos-02.jpg' width='320px'>
+<img src='images/wemos-03.jpg' width='320px'>
+
+This adapter board has since been updated with a new voltage regulator that is much easier to source. Below you will find the files needed to have it assembled.
+
+The updated schematic:
+
+<img src='images/wemos-a-schematic.jpg' width='423px'>
+
+The updated PCB:
+
+<img src='images/wemos-a-pcb.jpg' width='413px'>
+
+- [Gerber files](docs/gerbers-02.zip)
 
 ## Your own solution
 If you already have a ESP8266 board that can connect to a RS232 serial port, you should be able to use it as well.
 
-Just make sure you're using pins D5 and D6 to talk to the inverter or alternatively, change those pins in the main file and recompile the project.
+Just make sure you're using pins D5 and D6 to talk to the inverter or alternatively, change those pins in the `setupInverter()` function of the [main file](growatt-sph-spa-esp8266.ino) and recompile everything.

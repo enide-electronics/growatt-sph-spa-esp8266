@@ -47,9 +47,9 @@ After that initial setup is complete, you will still be able to access the confi
 
 ### MQTT
 The complete list of MQTT topics used by this project is available in the [topics](TOPICS.md) file.
-If you use Home Assistant, you can grab the list of preconfigured sensor entities from [the home assistant](HOMEASSISTANT.md) file to help you out.
+If you use Home Assistant, you can grab the list of preconfigured sensor entities from [the home assistant](HOMEASSISTANT.md) file to help you get started.
 
 ## Hardware
 This project runs on any generic ESP8266 board, as long as you provide the means to interface it to the inverter serial port, using a MAX3232 or similar chip.
-Look in the [hardware](HARWARE.md) file for more details on how to connect an ESP8266 board to the Growatt SPH inverter.
+Look in the [hardware](HARDWARE.md) file for more details on how to connect an ESP8266 board to the Growatt SPH inverter.
 

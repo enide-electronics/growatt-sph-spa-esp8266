@@ -32,16 +32,23 @@ Recently I decided to develop an adapter PCB, with all the components mentioned 
 The Wemos D1 mini has a lot more pins and thus the serial communication to the inverter is handled by SoftwareSerial on pins D5 and D6, thus freeing the USB interface (native serial port) to see log messages and debug information.
 
 This new adapter board also includes 2 LEDs and one push button to use in the future.
-Here's how it looks like:
+
+Here's how the prototype looks like:
 <img src='images/wemos-01.jpg' width='640px'>
 
-The adapter board without the Wemos D1 mini:
+And how it looks without the Wemos D1 mini inserted:
 <img src='images/wemos-02.jpg' width='640px'>
 <img src='images/wemos-03.jpg' width='640px'>
 
-Unfortunately, when designing this PCB I used a voltage regulator that is not easy to source. I'm in the process of changing it and will update this page with the Gerber files.
-<img src='images/wemos-a-schematic.jpg' width='800px'>
-<img src='images/wemos-a-pcb.jpg' width='437px'>
+This adapter board has since been updated with a new voltage regulator that is much easier to source and below you will find the files needed to have it assembled.
+
+The new schematic:
+<img src='images/wemos-a-schematic.jpg' width='846px'>
+
+The PCB:
+<img src='images/wemos-a-pcb.jpg' width='413px'>
+
+[Gerber files](docs/gerbers-02.zip) if you want to build it yourself.
 
 ## Your own solution
 If you already have a ESP8266 board that can connect to a RS232 serial port, you should be able to use it as well.

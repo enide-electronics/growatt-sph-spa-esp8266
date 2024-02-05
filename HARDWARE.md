@@ -29,7 +29,7 @@ credit: https://github.com/jkairys/growatt-esp8266
 ## Wemos D1 mini and similar
 Recently I decided to develop an adapter PCB, with all the components mentioned above and use a [Wemos D1 Mini](https://www.wemos.cc/en/latest/d1/d1_mini.html) board talk to the inverter via RS232 interface.
 
-The Wemos D1 mini has a lot more pins and thus the serial communication to the inverter is handled by SoftwareSerial on pins D5 and D6, thus freeing the USB interface (native serial port) to see log messages and debug information.
+The Wemos D1 mini has a lot more pins and thus the serial communication to the inverter is handled by SoftwareSerial on pins D5 and D6, freeing the USB interface (native serial port) for sending log messages and debug information.
 
 This new adapter board also includes 2 LEDs and one push button to use in the future.
 
@@ -37,20 +37,20 @@ Here's how the prototype looks like:
 <img src='images/wemos-01.jpg' width='640px'>
 
 And how it looks without the Wemos D1 mini inserted:
-<img src='images/wemos-02.jpg' width='640px'>
-<img src='images/wemos-03.jpg' width='640px'>
+<img src='images/wemos-02.jpg' width='320px'>
+<img src='images/wemos-03.jpg' width='320px'>
 
-This adapter board has since been updated with a new voltage regulator that is much easier to source and below you will find the files needed to have it assembled.
+This adapter board has since been updated with a new voltage regulator that is much easier to source. Below you will find the files needed to have it assembled.
 
-The new schematic:
-<img src='images/wemos-a-schematic.jpg' width='846px'>
+The updated schematic:
+<img src='images/wemos-a-schematic.jpg' width='423px'>
 
-The PCB:
+The updated PCB:
 <img src='images/wemos-a-pcb.jpg' width='413px'>
 
-[Gerber files](docs/gerbers-02.zip) if you want to build it yourself.
+- [Gerber files](docs/gerbers-02.zip)
 
 ## Your own solution
 If you already have a ESP8266 board that can connect to a RS232 serial port, you should be able to use it as well.
 
-Just make sure you're using pins D5 and D6 to talk to the inverter or alternatively, change those pins in the main file and recompile the project.
+Just make sure you're using pins D5 and D6 to talk to the inverter or alternatively, change those pins in the `setupInverter()` function of the [main file](growatt-sph-spa-esp8266.ino) and recompile everything.

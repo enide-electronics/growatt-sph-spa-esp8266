@@ -43,7 +43,7 @@ Unfortunately, when designing this PCB I used a voltage regulator that is not ea
 <img src='images/wemos-a-schematic.jpg' width='800px'>
 <img src='images/wemos-a-pcb.jpg' width='437px'>
 
-## You're own solution
+## Your own solution
 If you already have a ESP8266 board that can connect to a RS232 serial port, you should be able to use it as well.
 
 Just make sure you're using pins D5 and D6 to talk to the inverter or alternatively, change those pins in the main file and recompile the project.

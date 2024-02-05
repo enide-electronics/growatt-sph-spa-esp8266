@@ -4,6 +4,7 @@ The only thing needed, besides the ESP8266 board, is a MAX3232 or similar 3.3V R
 
 ## ESP-01 / WiFi232 modem clone
 I started this project using a clone of the [WiFi232 Modem](http://biosrhythm.com/?page_id=1453), with a custom 9 to 25 pin adapter, just to pass the TX, RX, GND and pin 9 (VCC from the inverter) to the WiFi232 modem.
+
 <img src='images/img02-esp01.jpg' width='640px'>
 <img src='images/img03-esp01-close-up.jpg' width='640px'>
 
@@ -34,18 +35,22 @@ The Wemos D1 mini has a lot more pins and thus the serial communication to the i
 This new adapter board also includes 2 LEDs and one push button to use in the future.
 
 Here's how the prototype looks like:
+
 <img src='images/wemos-01.jpg' width='640px'>
 
 And how it looks without the Wemos D1 mini inserted:
+
 <img src='images/wemos-02.jpg' width='320px'>
 <img src='images/wemos-03.jpg' width='320px'>
 
 This adapter board has since been updated with a new voltage regulator that is much easier to source. Below you will find the files needed to have it assembled.
 
 The updated schematic:
+
 <img src='images/wemos-a-schematic.jpg' width='423px'>
 
 The updated PCB:
+
 <img src='images/wemos-a-pcb.jpg' width='413px'>
 
 - [Gerber files](docs/gerbers-02.zip)

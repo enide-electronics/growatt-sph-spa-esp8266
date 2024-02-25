@@ -33,5 +33,10 @@ void InverterData::set(const char *name, uint8_t value) {
 
 void InverterData::set(const char *name, const char * value) {
     strncpy (msg, value, MSG_BUFFER_SIZE);
+    msg[MSG_BUFFER_SIZE-1] = '\0';
     (*this)[String(name)] = String(msg);
+}
+
+void InverterData::set(const char *name, const String value) {
+    (*this)[String(name)] = value;
 }

@@ -15,6 +15,7 @@ MqttPublisher::MqttPublisher(WiFiClient &espClient, const char *username, const 
     this->username = username;
     this->password = password;
     this->client = new PubSubClient(espClient);
+    this->client->setBufferSize(768);   // 768 should be enough for the JSON payloads
     this->client->setServer(serverIp.c_str(), portNumber);  
     this->lastReconnectAttemptMillis = 0;
     

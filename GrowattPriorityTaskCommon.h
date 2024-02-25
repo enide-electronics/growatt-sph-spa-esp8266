@@ -4,6 +4,7 @@
 #define TOPIC_VALUE_PRIORITY_LOAD "load"
 #define TOPIC_VALUE_PRIORITY_BAT "bat"
 #define TOPIC_VALUE_PRIORITY_GRID "grid"
+#define TOPIC_VALUE_PRIORITY_STATUS "status"
 
 #define PRIORITY_CONFIG_SSOC "ssoc"
 #define PRIORITY_CONFIG_PR "pr"

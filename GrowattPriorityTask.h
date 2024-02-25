@@ -19,6 +19,7 @@ class GrowattPriorityTask : public Task {
         ModbusMaster * node;
         String mqttValue;
         bool checkAndSetEnableBit(uint16_t startAddr, uint8_t bitValue);
+        bool readPriorityStatus();
         
     public:
         GrowattPriorityTask(ModbusMaster * node, const String &mqttValue);

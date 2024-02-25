@@ -67,6 +67,7 @@ These can be modified by publishing messages with the correct values to the foll
 |---------------------------------------|--------------------------------------------------|------------------------------------------|---------------------------------------------------------------------|
 | `growatt/settings/led`                | `0` OR `1` OR `2`                                | Default ESP8266 LED behaviour            | LED always OFF (0), always ON (1) or blinking when polling data (2) |
 | `growatt/settings/priority`           | `load` OR `bat` OR `grid`                        | Priority setting from the inverter menu  | `grid` is being tested and may require more work to work correctly  |
+|  (same)                               | `status`                                         | Special priority                         | `status` returns all priority settings in JSON format (see below)   |
 |---------------------------------------|--------------------------------------------------|------------------------------------------|---------------------------------------------------------------------|
 | `growatt/settings/priority/bat/ac`    | `0` OR `1` OR `off` OR `on` OR `false` OR `true` | AC Charger                               | Enables or disables the AC Charger in Battery First                 |
 | `growatt/settings/priority/bat/pr`    | `1` ... `100`                                    | Charge Power Rating                      | Battery First charging power rating                                 |
@@ -77,6 +78,43 @@ These can be modified by publishing messages with the correct values to the foll
 | `growatt/settings/priority/grid/ssoc` | `13` ... `100`                                   | Stop State Of Charge                     | Grid First SSOC                                                     |
 | `growatt/settings/priority/grid/t1`   | `00:00 23:59`                                    | Grid First Time                          | Grid First Time Interval 1 that can be set from the panel           |
 
+### Reading the inverter priority settings
+When publishing `status` to `growatt/settings/priority` the inverter replies with a JSON representation of all params you see inside the inverter priority menu.
+
+Here's an example of the inverter currently working in Battery First:
+```json
+{
+    "grid": {
+        "pr": 100,
+        "ssoc": 5,
+        "t1": "00:00 00:00",
+        "t1_enable": "off",
+        "t2": "00:00 00:00",
+        "t2_enable": "off",
+        "t3": "00:00 00:00",
+        "t3_enable": "off"
+    },
+    "bat": {
+        "pr": 40,
+        "ssoc": 57,
+        "ac": "off",
+        "t1": "00:00 23:59",
+        "t1_enable": "on",
+        "t2": "00:00 00:00",
+        "t2_enable": "off",
+        "t3": "00:00 00:00",
+        "t3_enable": "off"
+    },
+    "load": {
+        "t1": "00:00 00:00",
+        "t1_enable": "off",
+        "t2": "00:00 00:00",
+        "t2_enable": "off",
+        "t3": "00:00 00:00",
+        "t3_enable": "off"
+    }
+}
+```
 
 ## Settings currently not enabled in the code
 

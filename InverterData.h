@@ -29,6 +29,8 @@ class InverterData : public std::map<String, String> {
         void set(const char *name, uint8_t value);
 
         void set(const char *name, const char * value);
+        
+        void set(const char *name, const String value);
 };
 
 #endif

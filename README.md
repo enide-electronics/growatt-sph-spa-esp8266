@@ -1,8 +1,9 @@
 # growatt-sph-spa-esp8266
-This project's main goal is to read energy data from a **Growatt SPH** or **Growatt SPA** inverter and publish it to a MQTT server of your choice.
+This project's main goal is to read energy data from a **Growatt SPH** inverter and publish it to a MQTT server of your choice. Since most grie-tie Growatt inverters share the same register map, it was tested successfully on a **Growatt MIN 3000TL-XH** and should also work on the **Growatt SPA**.
+
 It can run on many ESP8266 boards like NodeMCU v3, Wemos D1 or even ESP-01, etc. because it doesn't require anything besides the ESP chip and a serial port MAX3232 level converter.
 
-The data published to the MQTT server can be consumed by almost any Home Automation solution.
+The inverter data is published to an MQTT server and can be consumed by almost any Home Automation solution.
 
 Many ideas to implement this project came from other projects, most notably:
 - [growatt-esp8266](https://github.com/jkairys/growatt-esp8266)

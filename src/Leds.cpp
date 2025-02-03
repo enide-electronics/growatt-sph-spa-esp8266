@@ -23,12 +23,12 @@ Leds::~Leds() {
 
 void Leds::lightUpDefault()
 {
-    analogWrite(LED_BUILTIN, 378);
+    analogWrite(LED_BUILTIN, 256);
 }
 
 void Leds::dimDefault()
 {
-    analogWrite(LED_BUILTIN, 32);
+    analogWrite(LED_BUILTIN, 4);
 }
 
 void Leds::turnOffDefault()
@@ -39,14 +39,14 @@ void Leds::turnOffDefault()
 void Leds::lightUpRed()
 {
     #ifdef LARGE_ESP_BOARD
-    analogWrite(LED_RED, 378);
+    analogWrite(LED_RED, 384);
     #endif
 }
 
 void Leds::dimRed()
 {
     #ifdef LARGE_ESP_BOARD
-    analogWrite(LED_RED, 32);
+    analogWrite(LED_RED, 8);
     #endif
 }
 
@@ -60,14 +60,14 @@ void Leds::turnOffRed()
 void Leds::lightUpGreen()
 {
     #ifdef LARGE_ESP_BOARD
-    analogWrite(LED_GREEN, 378);
+    analogWrite(LED_GREEN, 384);
     #endif
 }
 
 void Leds::dimGreen()
 {
     #ifdef LARGE_ESP_BOARD
-    analogWrite(LED_GREEN, 32);
+    analogWrite(LED_GREEN, 8);
     #endif
 }
 

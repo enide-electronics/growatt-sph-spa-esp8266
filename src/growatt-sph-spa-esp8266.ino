@@ -200,7 +200,7 @@ void loop() {
     unsigned long now = millis();
 
     // inverter report
-    if (mqtt->isConnected() && now - lastReportSentAtMillis > wcm.getModbusPollingInSeconds() * 1000) {
+    if (mqtt->isConnected() && now - lastReportSentAtMillis > wcm.getModbusPollingInSeconds() * (unsigned)1000) {
         if (ledStatus == 2) digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on
         GLOG::print(F("LOOP: Polling inverter"));
         inverter->read();

@@ -26,6 +26,7 @@
 #include <SoftwareSerial.h>
 
 #include "GlobalDefs.h"
+#include "Leds.h"
 #include "WifiAndConfigManager.h"
 #include "Inverter.h"
 #include "GrowattInverter.h"
@@ -42,30 +43,8 @@
 #define SETTINGS_LED_SUBTOPIC "settings/led"
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
-// to allow the code to compile when using a simple ESP-01
-// #if !defined(D5) || !defined(D6)
-    // #define D5 14 //pin mapping of nodemcu and d1_mini
-    // #define D6 12
-    
-    // #define D7 13 
-    // #define D8 15
-// #endif
-
-#ifdef LARGE_ESP_BOARD
-#define LED_RED   D7
-#define LED_GREEN D8
-    // on larger ESP boards they do change the extra LEDs
-    #define SET_R_LED(HL) digitalWrite(LED_RED, HL);
-    #define SET_G_LED(HL) digitalWrite(LED_GREEN, HL);
-#else
-    // on ESP-01 they do nothing
-    #define SET_R_LED(HL)
-    #define SET_G_LED(HL)
-#endif
-
-
-
 WiFiClient espClient;
+Leds leds;
 
 // tasks last run at millis
 unsigned long lastReportSentAtMillis = 0;
@@ -91,17 +70,17 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         // Switch on the LED if an 1 was received as first character
         char cLedStatus = (char)payload[0];
         if (cLedStatus == '1') {
-            digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
-            ledStatus = 1;                    // but actually the LED is on; this is because it is active low on the ESP-01)
+            leds.lightUpDefault();   // Turn the LED on 
+            ledStatus = 1;
         } else if (cLedStatus == '0') {
-            digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+            leds.turnOffDefault();  // Turn the LED off
             ledStatus = 0;
         } else if (cLedStatus == '2') {
-            digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+            leds.dimDefault();  // Dim the LED 
             ledStatus = 2;
         }
     } else {
-        SET_R_LED(HIGH); // Turn red led ON
+        leds.lightUpRed(); // RED lights up
         tasksRedLedCounter++;
         
         int safeLength = MIN(length, 15);
@@ -168,13 +147,6 @@ void applyNewConfiguration() {
 
 void setup() {
 
-    pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-
-#ifdef LARGE_ESP_BOARD
-    pinMode(LED_RED, OUTPUT);         // Initialize other LED pins on larger boards
-    pinMode(LED_GREEN, OUTPUT);
-#endif
-
     setupLogger();
     wcm.setupWifiAndConfig();
     setupInverter();
@@ -201,7 +173,7 @@ void loop() {
 
     // inverter report
     if (mqtt->isConnected() && now - lastReportSentAtMillis > wcm.getModbusPollingInSeconds() * (unsigned)1000) {
-        if (ledStatus == 2) digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on
+        if (ledStatus == 2) leds.lightUpDefault(); // Turn the LED on
         GLOG::print(F("LOOP: Polling inverter"));
         inverter->read();
 
@@ -216,9 +188,9 @@ void loop() {
 
         lastReportSentAtMillis = now;
         
-        if (ledStatus == 2) digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
+        if (ledStatus == 2) leds.dimDefault(); // Turn the LED off
         if (tasksRedLedCounter > 0) tasksRedLedCounter--;
-        if (tasksRedLedCounter == 0) SET_R_LED(LOW);    // Turn red led off when there are no more tasks
+        if (tasksRedLedCounter == 0) leds.dimRed(); // Dim RED led
     }
 
     // inverter tele report

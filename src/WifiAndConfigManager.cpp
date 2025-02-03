@@ -48,6 +48,7 @@ WifiAndConfigManager::WifiAndConfigManager() {
     mqttPasswordParam = NULL;
     mqttBaseTopicParam = NULL;
     modbusAddressParam = NULL;
+    modbusPollingInSecondsParam = NULL;
 }
 
 void WifiAndConfigManager::saveConfigCallback() {
@@ -104,6 +105,10 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     wm.addParameter(mqttBaseTopicParam);
     wm.addParameter(modbusAddressParam);
     wm.addParameter(modbusPollingInSecondsParam);
+
+   // make static ip fields visible in Wifi menu
+    wm.setShowStaticFields(true);
+    wm.setShowDnsFields(true);
 
     WiFi.mode(WIFI_STA);
     WiFi.hostname(deviceName.c_str());

@@ -155,6 +155,10 @@ void setup() {
 
 void loop() {
     wcm.getWM().process(); // wm web config portal
+
+    if (!wcm.isWifiConnected()) {
+        leds.turnOffDefault(); // LED should recover once Wifi reconnects
+    }
     
     // handle config changes
     if (wcm.checkforConfigChanges()) {

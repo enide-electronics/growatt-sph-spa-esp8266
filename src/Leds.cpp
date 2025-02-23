@@ -6,6 +6,8 @@
 #define LED_GREEN D8
 #endif
 
+#define MAX_PWM 512
+
 Leds::Leds() {
     pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
     
@@ -14,7 +16,7 @@ Leds::Leds() {
         pinMode(LED_GREEN, OUTPUT);
     #endif
     
-    analogWriteRange(512);
+    analogWriteRange(MAX_PWM);
 }
 
 Leds::~Leds() {
@@ -23,17 +25,17 @@ Leds::~Leds() {
 
 void Leds::lightUpDefault()
 {
-    analogWrite(LED_BUILTIN, 256);
+    analogWrite(LED_BUILTIN, MAX_PWM / 2);
 }
 
 void Leds::dimDefault()
 {
-    analogWrite(LED_BUILTIN, 4);
+    analogWrite(LED_BUILTIN, MAX_PWM - 12);
 }
 
 void Leds::turnOffDefault()
 {
-    analogWrite(LED_BUILTIN, 0);
+    analogWrite(LED_BUILTIN, MAX_PWM);
 }
 
 void Leds::lightUpRed()

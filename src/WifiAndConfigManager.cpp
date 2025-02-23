@@ -27,7 +27,8 @@
 WifiAndConfigManager::WifiAndConfigManager() {
     saveRequired = false;
     rebootRequired = false;
-    
+    wifiConnected = false;
+
     // config vars
     deviceName = DEFAULT_DEVICE_NAME;
     softApPassword = DEFAULT_SOFTAP_PASSWORD;
@@ -126,6 +127,7 @@ void WifiAndConfigManager::setupWifiAndConfig() {
         
         ESP.restart();
     } else {
+        wifiConnected = WiFi.status() == WL_CONNECTED;
         wm.startWebPortal();
         wm.server->on((String(FPSTR("/eraseall")).c_str()), std::bind(&WifiAndConfigManager::handleEraseAll, this));
     }
@@ -398,3 +400,13 @@ bool WifiAndConfigManager::isRestartRequired() {
     return rebootRequired;
 }
 
+bool WifiAndConfigManager::isWifiConnected() {
+    bool wifiConnectedNow = WiFi.status() == WL_CONNECTED;
+    
+    if (wifiConnected != wifiConnectedNow) {
+        GLOG::println(String(F("Wifi")) + String(wifiConnectedNow ? F("") : F("dis")) + String("connected"));
+        wifiConnected = wifiConnectedNow;
+    }
+    
+    return wifiConnected;
+}

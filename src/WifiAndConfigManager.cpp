@@ -93,6 +93,7 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     wm.setSaveConfigCallback(std::bind(&WifiAndConfigManager::saveConfigCallback, this));
     wm.setSaveParamsCallback(std::bind(&WifiAndConfigManager::saveConfigCallback, this));
     
+    wm.setTitle("Growatt SPH SPA ESP8266");
     std::vector<const char *> menu = {"wifi", "info", "param", "sep", "restart", "exit"};
     wm.setMenu(menu);
 

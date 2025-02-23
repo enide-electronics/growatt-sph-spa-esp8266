@@ -49,6 +49,7 @@ Leds leds;
 // tasks last run at millis
 unsigned long lastReportSentAtMillis = 0;
 unsigned long lastTeleSentAtMillis = 0;
+unsigned long lastWifiCheckAtMillis = 0;
 
 // led status (0 = off, 1 = on, 2 = blink when publishing data)
 uint8_t ledStatus = 2;
@@ -155,7 +156,7 @@ void setup() {
 
 void loop() {
     wcm.getWM().process(); // wm web config portal
-    
+
     // handle config changes
     if (wcm.checkforConfigChanges()) {
         if (wcm.isRestartRequired()) {
@@ -198,6 +199,14 @@ void loop() {
         GLOG::println(F("LOOP: Publishing telemetry"));
         mqtt->publishTele();
 
+        lastTeleSentAtMillis = now;
+    }
+
+    if (now - lastWifiCheckAtMillis > 5000) {
+        if (!wcm.isWifiConnected()) {
+            leds.turnOffDefault(); // LED should recover once Wifi reconnects
+        }
+    
         lastTeleSentAtMillis = now;
     }
 }

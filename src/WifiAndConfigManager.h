@@ -40,6 +40,7 @@ class WifiAndConfigManager {
         
         bool saveRequired;
         bool rebootRequired;
+        bool wifiConnected;
         
         void load();
         void save();
@@ -67,6 +68,7 @@ class WifiAndConfigManager {
         
         bool checkforConfigChanges();
         bool isRestartRequired();
+        bool isWifiConnected();
 };
 
 #endif

@@ -19,10 +19,30 @@
 #define MQTT_TOPIC_K "mqtt_topic"
 #define MODBUS_ADDR_K "modbus_addr"
 #define MODBUS_POLLING_K "modbus_poll_secs"
+#define INVERTER_MODEL_K "inverter_model"
 
-#define DEFAULT_TOPIC "growatt"
+#define DEFAULT_TOPIC "inverter"
 #define DEFAULT_SOFTAP_PASSWORD "12345678"
-#define DEFAULT_DEVICE_NAME "growatt-sph-spa-esp8266"
+#define DEFAULT_DEVICE_NAME "growatt-adapter-esp8266"
+
+const char inverterTypeSelectStr[] PROGMEM = R"(
+  <label for='inverter_model'>Inverter model</label>
+  <select name="inverterModel" id="inverter_model" onchange="document.getElementById('im_key_custom').value = this.value">
+    <option value="sph">Growatt SPH</option>
+    <option value="sphtl">Growatt SPH-TL</option>
+    <option value="minxh">Growatt MIN-XH</option>
+    <option value="test">Test</option>
+    <option value="none">None</option>
+  </select>
+  <script>
+    document.getElementById('inverter_model').value = "%s";
+    document.querySelector("[for='im_key_custom']").hidden = true;
+    document.getElementById('im_key_custom').hidden = true;
+  </script>
+  )";
+
+// do not place in PROGMEM because wm keeps the address of the const char * which then is volatile
+  const char selectStyle[] = "<style>select{width:100%;border-radius:.3rem;background:white;font-size:1em;padding:5px;margin:5px 0;}</style>";
 
 WifiAndConfigManager::WifiAndConfigManager() {
     saveRequired = false;
@@ -58,12 +78,12 @@ void WifiAndConfigManager::saveConfigCallback() {
 }
 
 void WifiAndConfigManager::handleEraseAll() {
-    GLOG::println(F("DELETE SPIFFS CONFIG"));
+    GLOG::println(F("WiCM: DELETE SPIFFS CONFIG"));
     if (SPIFFS.exists(F("/config.json"))) {
         SPIFFS.remove(F("/config.json"));
     }
 
-    GLOG::println(F("DELETE WIFI CONFIG"));
+    GLOG::println(F("WiCM: DELETE WIFI CONFIG"));
     ESP.eraseConfig();
     
     wm.server->send(200, F("text/plain"), F("Done! Rebooting now, please wait a few seconds."));
@@ -73,42 +93,64 @@ void WifiAndConfigManager::handleEraseAll() {
     ESP.restart();
 }
 
+void WifiAndConfigManager::_updateInverterTypeSelect() {
+snprintf(inverterModelCustomFieldBufferStr, 699, inverterTypeSelectStr, inverterType.c_str());
+    inverterModelCustomFieldBufferStr[699] = '\0';
+
+    inverterModelCustomFieldParam = new WiFiManagerParameter(inverterModelCustomFieldBufferStr);
+}
+
 void WifiAndConfigManager::setupWifiAndConfig() {
 
     load();
     show();
 
-    // create parameters
+    wm.setCustomHeadElement(selectStyle);
+
+    // device params
     deviceNameParam = new WiFiManagerParameter("devicename", "Device Name", deviceName.c_str(), 32);
     softApPasswordParam = new WiFiManagerParameter("wifipass", "SoftAP Password", softApPassword.c_str(), 32);
+    
+    // MQTT params
     mqttServerParam = new WiFiManagerParameter("server", "MQTT server", mqttServer.c_str(), 40);
     mqttPortParam = new WiFiManagerParameter("port", "MQTT port", String(mqttPort).c_str(), 6);
     mqttUsernameParam = new WiFiManagerParameter("username", "MQTT username", String(mqttUsername).c_str(), 32);
     mqttPasswordParam = new WiFiManagerParameter("password", "MQTT password", String(mqttPassword).c_str(), 32);
     mqttBaseTopicParam = new WiFiManagerParameter("topic", "MQTT base topic", mqttBaseTopic.c_str(), 24);
-    modbusAddressParam = new WiFiManagerParameter("modbus", "Modbus address", String(modbusAddress).c_str(), 3);
-    modbusPollingInSecondsParam = new WiFiManagerParameter("modbuspoll", "Modbus polling (secs)", String(modbusPollingInSeconds).c_str(), 3);
+    
+    // inverter params
+    modbusAddressParam = new WiFiManagerParameter("modbus", "Inverter modbus address", String(modbusAddress).c_str(), 3);
+    modbusPollingInSecondsParam = new WiFiManagerParameter("modbuspoll", "Inverter modbus polling (secs)", String(modbusPollingInSeconds).c_str(), 3);
+    _updateInverterTypeSelect();
+    inverterTypeCustomHidden = new WiFiManagerParameter("im_key_custom", "Will be hidden", inverterType.c_str(), 10);
+    
 
     //set config callbacks
     wm.setSaveConfigCallback(std::bind(&WifiAndConfigManager::saveConfigCallback, this));
     wm.setSaveParamsCallback(std::bind(&WifiAndConfigManager::saveConfigCallback, this));
     
-    wm.setTitle("Growatt SPH SPA ESP8266");
-    std::vector<const char *> menu = {"wifi", "info", "param", "sep", "restart", "exit"};
+    wm.setTitle("Growatt Adapter ESP8266");
+    std::vector<const char *> menu = {"wifi", "param", "info", "sep", "restart", "exit"};
     wm.setMenu(menu);
 
-    //add all your parameters here
+    // add device params
     wm.addParameter(deviceNameParam);
     wm.addParameter(softApPasswordParam);
+
+    // add MQTT params
     wm.addParameter(mqttServerParam);
     wm.addParameter(mqttPortParam);
     wm.addParameter(mqttUsernameParam);
     wm.addParameter(mqttPasswordParam);
     wm.addParameter(mqttBaseTopicParam);
+    
+    // add inverter params
+    wm.addParameter(inverterTypeCustomHidden); // Needs to be added before the javascript that hides it
+    wm.addParameter(inverterModelCustomFieldParam);
     wm.addParameter(modbusAddressParam);
     wm.addParameter(modbusPollingInSecondsParam);
 
-   // make static ip fields visible in Wifi menu
+    // make static ip fields visible in Wifi menu
     wm.setShowStaticFields(true);
     wm.setShowDnsFields(true);
 
@@ -120,10 +162,10 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     wm.setAPClientCheck(true); // avoid timeout if client connected to softap
     wm.setShowInfoUpdate(false); // don't show OTA button on info page
     
-
+    // now connect with the wifi info previously stored
     bool res = wm.autoConnect(deviceName.c_str(), softApPassword.c_str());
     if (!res) {
-        GLOG::println("Failed to connect to wifi, restarting...");
+        GLOG::println("WiCM: Failed to connect to wifi, restarting...");
         delay(1000);
         
         ESP.restart();
@@ -134,8 +176,8 @@ void WifiAndConfigManager::setupWifiAndConfig() {
     }
 
     GLOG::println("");
-    GLOG::println(F("WiFi connected"));
-    GLOG::print(F("IP address: "));
+    GLOG::println(F("WiCM: WiFi connected"));
+    GLOG::print(F("WiCM: IP address: "));
     GLOG::println(WiFi.localIP());
 
     randomSeed(micros());
@@ -151,16 +193,16 @@ void WifiAndConfigManager::setupWifiAndConfig() {
 
 void WifiAndConfigManager::load() {
     //read configuration from FS json
-    GLOG::println(F("Mounting FS..."));
+    GLOG::println(F("WiCM: Mounting FS..."));
 
     if (SPIFFS.begin()) {
-        GLOG::println("Mounted file system");
+        GLOG::println("WiCM: FS mount OK");
         if (SPIFFS.exists(F("/config.json"))) {
             //file exists, reading and loading
-            GLOG::println(F("Reading config file"));
+            GLOG::println(F("WiCM: Reading config file"));
             File configFile = SPIFFS.open(F("/config.json"), "r");
             if (configFile) {
-                GLOG::println(F("Opened config file"));
+                GLOG::println(F("WiCM: Opened config file"));
                 size_t size = configFile.size();
                 // Allocate a buffer to store contents of the file.
                 std::unique_ptr<char[]> buf(new char[size]);
@@ -233,14 +275,23 @@ void WifiAndConfigManager::load() {
                     } else {
                         modbusPollingInSeconds = 5;
                     }
+
+                    if (json.containsKey(INVERTER_MODEL_K)) {
+                        inverterType = json[INVERTER_MODEL_K].as<String>();
+                        if (inverterType == "") {
+                            inverterType = "none";
+                        }
+                    } else {
+                        inverterType = "none";
+                    }
                 } else {
-                    GLOG::println(F("Failed to load json config"));
+                    GLOG::println(F("failed to parse"));
                 }
                 configFile.close();
             }
         }
     } else {
-        GLOG::println(("Failed to mount FS"));
+        GLOG::println(("WiCM: FS mount failed"));
     }
     //end read
 
@@ -249,7 +300,7 @@ void WifiAndConfigManager::load() {
 void WifiAndConfigManager::save() {
     //save the custom parameters to FS
 
-    GLOG::println(F("Saving config"));
+    GLOG::println(F("WiCM: Saving config file"));
 
 #if ARDUINOJSON_VERSION_MAJOR >= 6
     DynamicJsonDocument json(1024);
@@ -269,10 +320,11 @@ void WifiAndConfigManager::save() {
     json[MQTT_TOPIC_K] = mqttBaseTopic.c_str();
     json[MODBUS_ADDR_K] = modbusAddress;
     json[MODBUS_POLLING_K] = modbusPollingInSeconds;
+    json[INVERTER_MODEL_K] = inverterType.c_str();
 
     File configFile = SPIFFS.open(F("/config.json"), "w");
     if (!configFile) {
-        GLOG::println(F("Failed to open config file for writing"));
+        GLOG::println(F("WiCM: Save failed"));
     }
 
 #if ARDUINOJSON_VERSION_MAJOR >= 6
@@ -298,6 +350,9 @@ void WifiAndConfigManager::copyFromParamsToVars() {
     mqttBaseTopic = String(mqttBaseTopicParam->getValue());
     modbusAddress = String(modbusAddressParam->getValue()).toInt();
     modbusPollingInSeconds = String(modbusPollingInSecondsParam->getValue()).toInt();
+    inverterType = String(inverterTypeCustomHidden->getValue());
+
+    _updateInverterTypeSelect();
 }
 
 String WifiAndConfigManager::getParam(String name){
@@ -337,6 +392,9 @@ void WifiAndConfigManager::show() {
     
     GLOG::print(F("Modbus Poll(s): "));
     GLOG::println(modbusPollingInSeconds);
+
+    GLOG::print(F("Inverter type: "));
+    GLOG::println(inverterType);
 }
 
 String WifiAndConfigManager::getDeviceName() {
@@ -371,6 +429,10 @@ int WifiAndConfigManager::getModbusPollingInSeconds() {
     return modbusPollingInSeconds;
 }
 
+String WifiAndConfigManager::getInverterType() {
+    return inverterType;
+}
+
 WiFiManager & WifiAndConfigManager::getWM() {
     return wm;
 }
@@ -380,7 +442,7 @@ bool WifiAndConfigManager::checkforConfigChanges() {
         
         String newDeviceName = String(deviceNameParam->getValue());
         if (newDeviceName != deviceName) {
-            GLOG::println(String(F("New device name : ")) + newDeviceName);
+            GLOG::println(String(F("WiCM: New device name : ")) + newDeviceName);
             rebootRequired = true;
         }
         
@@ -405,7 +467,7 @@ bool WifiAndConfigManager::isWifiConnected() {
     bool wifiConnectedNow = WiFi.status() == WL_CONNECTED;
     
     if (wifiConnected != wifiConnectedNow) {
-        GLOG::println(String(F("Wifi")) + String(wifiConnectedNow ? F("") : F("dis")) + String("connected"));
+        GLOG::println(String(F("WiCM: WiFi")) + String(wifiConnectedNow ? F("") : F("dis")) + String("connected"));
         wifiConnected = wifiConnectedNow;
     }
     

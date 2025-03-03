@@ -13,7 +13,7 @@ void NoneInverter::read() {
 }
 
 bool NoneInverter::isDataValid() {
-    return false;
+    return true;
 }
 
     

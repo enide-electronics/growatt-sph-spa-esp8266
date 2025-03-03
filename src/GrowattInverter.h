@@ -20,13 +20,10 @@
 
 #include "Inverter.h"
 
-// Uncomment the following line to enable reporting of all 3 phase AC data
-//#define TL_INVERTER
-
 class GrowattInverter : public Inverter
 {
     public:
-        GrowattInverter(Stream &serial, uint8_t slaveAddress);
+        GrowattInverter(Stream *serial, bool shouldDeleteSerial, uint8_t slaveAddress, bool enableRemoteCommands, bool enableThreePhases);
         virtual ~GrowattInverter();
         virtual void read();
         virtual bool isDataValid();
@@ -39,6 +36,11 @@ class GrowattInverter : public Inverter
         float glueFloat(uint16_t w1, uint16_t w2);
         void incrementStateIdx();
         
+        Stream *serial;
+        bool shouldDeleteSerial;
+        bool enableRemoteCommands;
+        bool enableTL;
+
         ModbusMaster *node;
         uint8_t currentStateIdx;
         uint8_t lastUpdatedState;

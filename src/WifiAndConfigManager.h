@@ -28,6 +28,10 @@ class WifiAndConfigManager {
         WiFiManagerParameter *modbusAddressParam;
         WiFiManagerParameter *modbusPollingInSecondsParam;
         
+        char inverterModelCustomFieldBufferStr[700];
+        WiFiManagerParameter *inverterModelCustomFieldParam;
+        WiFiManagerParameter *inverterTypeCustomHidden;
+        
         String deviceName;
         String softApPassword;
         String mqttServer;
@@ -37,6 +41,7 @@ class WifiAndConfigManager {
         String mqttBaseTopic;
         int modbusAddress;
         int modbusPollingInSeconds;
+        String inverterType;
         
         bool saveRequired;
         bool rebootRequired;
@@ -49,6 +54,7 @@ class WifiAndConfigManager {
         void saveConfigCallback();
         void handleEraseAll();
         String getParam(String name);
+        void _updateInverterTypeSelect();
 
     public:
         WifiAndConfigManager();
@@ -63,6 +69,7 @@ class WifiAndConfigManager {
         String getMqttTopic();
         int getModbusAddress();
         int getModbusPollingInSeconds();
+        String getInverterType();
 
         WiFiManager & getWM();
         

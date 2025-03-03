@@ -73,7 +73,7 @@ WifiAndConfigManager::WifiAndConfigManager() {
 }
 
 void WifiAndConfigManager::saveConfigCallback() {
-    GLOG::println("SAVE IS REQUIRED");
+    GLOG::println("WiCM: Save config requested");
     saveRequired = true;
 }
 

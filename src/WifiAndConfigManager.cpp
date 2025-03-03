@@ -71,6 +71,8 @@ WifiAndConfigManager::WifiAndConfigManager() {
     mqttBaseTopicParam = NULL;
     modbusAddressParam = NULL;
     modbusPollingInSecondsParam = NULL;
+    inverterModelCustomFieldParam = NULL;
+    inverterTypeCustomHidden = NULL;
 }
 
 void WifiAndConfigManager::saveConfigCallback() {
@@ -101,12 +103,28 @@ snprintf(inverterModelCustomFieldBufferStr, 699, inverterTypeSelectStr, inverter
     inverterModelCustomFieldParam = new WiFiManagerParameter(inverterModelCustomFieldBufferStr);
 }
 
+void WifiAndConfigManager::_recycleParams() {
+    if (deviceNameParam != NULL) delete deviceNameParam;
+    if (softApPasswordParam != NULL) delete softApPasswordParam;
+    if (mqttServerParam != NULL) delete mqttServerParam;
+    if (mqttPortParam != NULL) delete mqttPortParam;
+    if (mqttUsernameParam != NULL) delete mqttUsernameParam;
+    if (mqttPasswordParam != NULL) delete mqttPasswordParam;
+    if (mqttBaseTopicParam != NULL) delete mqttBaseTopicParam;
+    if (modbusAddressParam != NULL) delete modbusAddressParam;
+    if (modbusPollingInSecondsParam != NULL) delete modbusPollingInSecondsParam;
+    if (inverterModelCustomFieldParam != NULL) delete inverterModelCustomFieldParam;
+    if (inverterTypeCustomHidden != NULL) delete inverterTypeCustomHidden;
+}
+
 void WifiAndConfigManager::setupWifiAndConfig() {
 
     load();
     show();
 
     wm.setCustomHeadElement(selectStyle);
+
+    _recycleParams();
 
     // device params
     deviceNameParam = new WiFiManagerParameter("devicename", "Device Name", deviceName.c_str(), 32);

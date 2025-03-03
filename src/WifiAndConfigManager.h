@@ -55,6 +55,7 @@ class WifiAndConfigManager {
         void handleEraseAll();
         String getParam(String name);
         void _updateInverterTypeSelect();
+        void _recycleParams();
 
     public:
         WifiAndConfigManager();

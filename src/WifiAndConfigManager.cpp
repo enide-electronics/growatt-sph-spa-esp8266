@@ -59,6 +59,7 @@ WifiAndConfigManager::WifiAndConfigManager() {
     mqttBaseTopic = DEFAULT_TOPIC;
     modbusAddress = 1;
     modbusPollingInSeconds = 5;
+    inverterType = "none";
     
     // config var web params
     deviceNameParam = NULL;
@@ -73,7 +74,7 @@ WifiAndConfigManager::WifiAndConfigManager() {
 }
 
 void WifiAndConfigManager::saveConfigCallback() {
-    GLOG::println("WiCM: Save config requested");
+    GLOG::println(F("WiCM: Save config"));
     saveRequired = true;
 }
 

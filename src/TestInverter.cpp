@@ -41,6 +41,8 @@ InverterData TestInverter::getData(bool fullSet) {
     
     data.set("Pac", p);
     data.set("Fac", (float) 50.0);
+
+    return data;
 }
 
 void TestInverter::setIncomingTopicData(const String &topic, const String &value) {

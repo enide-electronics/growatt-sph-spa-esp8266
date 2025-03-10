@@ -74,6 +74,8 @@ class WifiAndConfigManager {
 
         WiFiManager & getWM();
         
+        
+        void doFactoryReset();
         bool checkforConfigChanges();
         bool isRestartRequired();
         bool isWifiConnected();

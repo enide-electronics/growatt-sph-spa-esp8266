@@ -25,6 +25,15 @@
 #define DEFAULT_SOFTAP_PASSWORD "12345678"
 #define DEFAULT_DEVICE_NAME "growatt-adapter-esp8266"
 
+/*
+  Future work on WiFiManager: To automatically exit from the paramsave page back to root, after saving!
+  WiFiManager: strings_en.h
+  change
+    const char HTTP_PARAMSAVED[]       PROGMEM = "<div class='msg S'>Saved<br/></div>";
+  to
+    const char HTTP_PARAMSAVED[]       PROGMEM = "<meta http-equiv='refresh' content='5;url=/' /><div class='msg S'>Saved<br/></div>";
+*/
+
 const char inverterTypeSelectStr[] PROGMEM = R"(
   <label for='inverter_model'>Inverter model</label>
   <select name="inverterModel" id="inverter_model" onchange="document.getElementById('im_key_custom').value = this.value">
@@ -81,19 +90,27 @@ void WifiAndConfigManager::saveConfigCallback() {
 }
 
 void WifiAndConfigManager::handleEraseAll() {
+    doFactoryReset();
+
+    wm.server->send(200, F("text/plain"), F("Done! Rebooting now, please wait a few seconds."));
+    
+    // needed to allow the response to be returned and the logs to be flushed
+    delay(2000);
+    
+    ESP.restart();
+}
+
+void WifiAndConfigManager::doFactoryReset() {
     GLOG::println(F("WiCM: DELETE SPIFFS CONFIG"));
+    
     if (SPIFFS.exists(F("/config.json"))) {
         SPIFFS.remove(F("/config.json"));
     }
 
     GLOG::println(F("WiCM: DELETE WIFI CONFIG"));
     ESP.eraseConfig();
-    
-    wm.server->send(200, F("text/plain"), F("Done! Rebooting now, please wait a few seconds."));
-    
-    delay(2000);
-    
-    ESP.restart();
+
+    GLOG::println("WiCM: FACTORY RESET DONE");
 }
 
 void WifiAndConfigManager::_updateInverterTypeSelect() {

@@ -43,6 +43,11 @@
 #define SETTINGS_LED_SUBTOPIC "settings/led"
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
+#ifdef LARGE_ESP_BOARD
+#define BUTTON D2
+
+#endif
+
 WiFiClient espClient;
 Leds leds;
 
@@ -135,8 +140,25 @@ void applyNewConfiguration() {
     areRemoteCommandsSupported = topics.size() > 0;
 }
 
-void setup() {
+bool isFactoryResetRequested() {
+#ifdef LARGE_ESP_BOARD
+    static unsigned long buttonLastReleasedMillis = millis();
+    unsigned long now = millis();
 
+    if (BUTTON == LOW && now - buttonLastReleasedMillis > 30000UL) {
+        return true;
+    } 
+
+    buttonLastReleasedMillis = millis();
+#endif
+
+    return false;
+}
+
+void setup() {
+#ifdef LARGE_ESP_BOARD
+    pinMode(BUTTON, INPUT_PULLUP);
+#endif
     setupLogger();
     wcm.setupWifiAndConfig();
     setupInverter();
@@ -147,6 +169,13 @@ void setup() {
 
 void loop() {
     wcm.getWM().process(); // wm web config portal
+
+    if (isFactoryResetRequested()) {
+        GLOG::println(F("LOOP: Factory reset!"));
+        wcm.doFactoryReset();
+        delay(1000);
+        ESP.restart();
+    }
 
     // handle config changes
     if (wcm.checkforConfigChanges()) {

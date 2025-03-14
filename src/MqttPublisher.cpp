@@ -8,6 +8,8 @@
 
 #include "MqttPublisher.h"
 #include "GLog.h"
+
+#define LWT_TOPIC ((this->topic + "/online").c_str())
         
 MqttPublisher::MqttPublisher(WiFiClient &espClient, const char *username, const char * password, const char *baseTopic, const char *server, int port) {
     this->serverIp = server;
@@ -41,6 +43,9 @@ void MqttPublisher::publishTele() {
     client->publish((topic + "/tele/ClientID").c_str(), clientId.c_str());
 }
 
+void MqttPublisher::publishOnline() {
+    client->publish(LWT_TOPIC, "true", true);
+}
 
 void MqttPublisher::setClientId(String &clientId) {
     this->clientId = clientId;
@@ -71,10 +76,10 @@ void MqttPublisher::keepConnected() {
         bool success;
         if (username.length() == 0 && password.length() == 0) {
             GLOG::print(String(F("MQTT: attempting connection to ")) + this->serverIp + F("..."));
-            success = client->connect(clientId.c_str());
+            success = client->connect(clientId.c_str(), LWT_TOPIC, 1, true, "offline");
         } else {
             GLOG::print(String(F("MQTT: attempting connection to ")) + this->serverIp + F(" with username '") + username + F("' and password with ") + password.length() + F(" chars..."));
-            success = client->connect(clientId.c_str(), username.c_str(), password.c_str());
+            success = client->connect(clientId.c_str(), username.c_str(), password.c_str(), LWT_TOPIC, 1, true, "offline");
 
         }
         if (success) {
@@ -82,6 +87,7 @@ void MqttPublisher::keepConnected() {
             
             // Once connected, publish an announcement...
             publishTele();
+            publishOnline();
       
             // ... and resubscribe
             for (String s : subscriptions) {

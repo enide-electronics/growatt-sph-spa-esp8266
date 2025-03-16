@@ -76,10 +76,10 @@ void MqttPublisher::keepConnected() {
         bool success;
         if (username.length() == 0 && password.length() == 0) {
             GLOG::print(String(F("MQTT: attempting connection to ")) + this->serverIp + F("..."));
-            success = client->connect(clientId.c_str(), LWT_TOPIC, 1, true, "offline");
+            success = client->connect(clientId.c_str(), LWT_TOPIC, 1, true, "false");
         } else {
             GLOG::print(String(F("MQTT: attempting connection to ")) + this->serverIp + F(" with username '") + username + F("' and password with ") + password.length() + F(" chars..."));
-            success = client->connect(clientId.c_str(), username.c_str(), password.c_str(), LWT_TOPIC, 1, true, "offline");
+            success = client->connect(clientId.c_str(), username.c_str(), password.c_str(), LWT_TOPIC, 1, true, "false");
 
         }
         if (success) {

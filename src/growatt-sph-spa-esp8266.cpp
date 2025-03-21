@@ -207,6 +207,6 @@ void loop() {
             leds.turnOffDefault(); // LED should recover once Wifi reconnects
         }
     
-        lastTeleSentAtMillis = now;
+        lastWifiCheckAtMillis = now;
     }
 }
